@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1543355758 source:/home/kuba/Programowanie/Programowanie_w_C/Czasdzialania/Lista6zad2.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<stdbool.h>
+	"Lista6zad2.h"
+
+1543354905 /home/kuba/Programowanie/Programowanie_w_C/Czasdzialania/Lista6zad2.h
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<stdbool.h>
+
+1543354880 source:/home/kuba/Programowanie/Programowanie_w_C/Czasdzialania/main.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<stdbool.h>
+	"Lista6zad2.h"
+

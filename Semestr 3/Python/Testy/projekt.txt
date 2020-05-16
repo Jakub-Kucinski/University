@@ -1,0 +1,8 @@
+-termin: 22 stycznia / 15 stycznia najlepiej (można zrobić krótką prezentację)
+-zrobić dokumentację (funkcje prostsze mają się same dokumentować po nazwie, większe opisać)
+-funkcja nie powinna być > 40 linijek
+-modularyzacja kodu
+-virtualenv (lista bibliotek używanych w projekcie z odpowiednimi wersjami)
+-kod ma być czytelny
+-testy (niekoniecznie całości, można przetestować jeden moduł. chodzi o naukę pisania testów)
+-jakiś plik README (np. od czego najlepiej czytać kod, o co chodzi w częściach kodu, ewentualne wskazówki)

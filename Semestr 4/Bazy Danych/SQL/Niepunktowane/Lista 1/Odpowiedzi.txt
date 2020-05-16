@@ -1,0 +1,293 @@
+1.
+SELECT uzytkownik.nazwisko FROM uzytkownik JOIN grupa USING(kod_uz) JOIN przedmiot_semestr USING (kod_przed_sem) JOIN semestr USING(semestr_id) JOIN przedmiot USING(kod_przed) WHERE semestr.nazwa LIKE 'Semestr zimowy 2017/2018' AND uzytkownik.semestr = 0 AND przedmiot.nazwa LIKE 'Matematyka dyskretna (M)' AND (grupa.rodzaj_zajec LIKE 'c' OR grupa.rodzaj_zajec LIKE 'C') ORDER BY 1;
+  nazwisko  
+------------
+ Bieńkowski
+ Paluch
+ Stachowiak
+ Sysło
+
+
+2.
+SELECT uzytkownik.imie, uzytkownik.nazwisko, wybor.data FROM uzytkownik JOIN wybor USING(kod_uz) JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) JOIN semestr USING(semestr_id) WHERE grupa.rodzaj_zajec = 'w' AND przedmiot.nazwa LIKE 'Matematyka dyskretna (M)' AND semestr.nazwa LIKE 'Semestr zimowy 2017/2018' ORDER BY wybor.data LIMIT 1;
+  imie  |  nazwisko   |             data             
+--------+-------------+------------------------------
+ Damian | Pabacki2569 | 2017-09-26 11:20:29.96857+02
+
+
+3.
+SELECT wybor.data FROM uzytkownik JOIN wybor USING(kod_uz) JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) JOIN semestr USING(semestr_id) WHERE grupa.rodzaj_zajec = 'w' AND przedmiot.nazwa LIKE 'Matematyka dyskretna (M)' AND semestr.nazwa LIKE 'Semestr zimowy 2017/2018' ORDER BY wybor.data LIMIT 1;
+             data             
+------------------------------
+ 2017-09-26 11:20:29.96857+02
+
+SELECT wybor.data FROM uzytkownik JOIN wybor USING(kod_uz) JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) JOIN semestr USING(semestr_id) WHERE grupa.rodzaj_zajec = 'w' AND przedmiot.nazwa LIKE 'Matematyka dyskretna (M)' AND semestr.nazwa LIKE 'Semestr zimowy 2017/2018' ORDER BY wybor.data DESC LIMIT 1;
+             data              
+-------------------------------
+ 2017-10-17 19:21:49.743042+02
+
+
+4.
+SELECT DISTINCT  przedmiot.nazwa FROM przedmiot JOIN przedmiot_semestr USING(kod_przed) JOIN grupa USING(kod_przed_sem) WHERE grupa.rodzaj_zajec = 'e' AND przedmiot.rodzaj = 'o';
+                  nazwa                   
+------------------------------------------
+ Algebra
+ Algebra (ang.)
+ Algorytmy i struktury danych (ang.)
+ Algorytmy i struktury danych (M)
+ Analiza matematyczna
+ Analiza matematyczna (ang.)
+ Analiza numeryczna
+ Analiza numeryczna (ang.)
+ Analiza numeryczna (L)
+ Analiza numeryczna (M)
+ Języki formalne i złożoność obliczeniowa
+ Logika dla informatyków
+ Logika dla informatyków (ang.)
+ Matematyka dyskretna (L)
+ Matematyka dyskretna (M)
+ Programowanie
+ Programowanie (ang.)
+ Programowanie (L)
+ Programowanie (M)
+(19 rows)
+
+
+5.
+SELECT DISTINCT uzytkownik.kod_uz, uzytkownik.imie, uzytkownik.nazwisko FROM uzytkownik JOIN grupa USING(kod_uz) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) JOIN semestr USING(semestr_id) WHERE semestr.nazwa LIKE 'Semestr zimowy%' AND przedmiot.rodzaj = 'o' AND (grupa.rodzaj_zajec = 'c' OR grupa.rodzaj_zajec = 'C');
+ kod_uz |    imie     |     nazwisko      
+--------+-------------+-------------------
+    147 | Antoni      | Kościelski
+    153 | Grzegorz    | Stachowiak
+    159 | Jerzy       | Marcinkowski
+    163 | Leszek      | Pacholski
+    171 | Paweł       | Keller
+    176 | Sebastian   | Bala
+    177 | Stanisław   | Lewanowicz
+    181 | Tomasz      | Wierzbicki
+    183 | Witold      | Karczewski
+    187 | Przemysława | Kanarek
+    367 | Maciej M.   | Sysło
+    376 |             | <brak przydziału>
+   1364 | Jurij       | Kryakin
+   1378 | Paweł       | Woźny
+   1380 | Katarzyna   | Paluch
+   1403 | Marcin      | Bieńkowski
+   1584 | Witold      | Charatonik
+   1780 | Rafał       | Nowak
+   1781 | Piotr       | Wieczorek
+   2162 | Paweł       | Zawiślak
+   2163 | Ilona       | Królak
+   2319 | Michał      | Wrona
+   2331 | Anna        | Krystek
+   2332 | Roman       | Urban
+   2661 | Artur       | Jeż
+   3048 | Maciej      | Paluszyński
+   3053 | Jakub       | Łopuszański
+   3054 | Łukasz      | Jeż
+   3064 | Michał      | Olech
+   3885 | Piotr       | Gogol
+(30 rows)
+
+
+6.
+SELECT DISTINCT przedmiot.nazwa FROM uzytkownik JOIN grupa USING(kod_uz) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) JOIN semestr USING(semestr_id) WHERE uzytkownik.nazwisko = 'Urban';
+        nazwa         
+----------------------
+ Analiza matematyczna
+(1 row)
+
+
+7.
+SELECT kod_uz, nazwisko FROM uzytkownik WHERE nazwisko LIKE 'Kabacki%';
+
+
+8.
+SELECT DISTINCT A1.kod_uz FROM (SELECT DISTINCT uzytkownik.kod_uz, semestr.semestr_id FROM uzytkownik JOIN wybor USING(kod_uz) JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) JOIN semestr USING(semestr_id) WHERE przedmiot.nazwa LIKE 'Algorytmy i struktury danych (M)' ORDER BY uzytkownik.kod_uz) A1, (SELECT DISTINCT uzytkownik.kod_uz, semestr.semestr_id FROM uzytkownik JOIN wybor USING(kod_uz) JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) JOIN semestr USING(semestr_id) WHERE przedmiot.nazwa LIKE 'Algorytmy i struktury danych (M)' ORDER BY uzytkownik.kod_uz) A2 WHERE A1.kod_uz = A2.kod_uz AND A1.semestr_id != A2.semestr_id;
+
+
+9.
+SELECT semestr.semestr_id, przedmiot.nazwa FROM semestr JOIN przedmiot_semestr USING(semestr_id) JOIN przedmiot USING(kod_przed) WHERE przedmiot.rodzaj = 'o' ORDER BY semestr.semestr_id;
+
+
+10.
+SELECT grupa.kod_grupy FROM grupa JOIN przedmiot_semestr USING(kod_przed_sem) JOIN semestr USING(semestr_id) JOIN przedmiot USING(kod_przed) WHERE grupa.rodzaj_zajec IN ('c', 'C') AND semestr.nazwa = 'Semestr zimowy 2017/2018' AND przedmiot.nazwa LIKE 'Logika dla informatyk_w%';
+ kod_grupy 
+-----------
+      5656
+      5657
+      5664
+      5663
+      5797
+      5661
+      5662
+      5658
+      5659
+      5660
+(10 rows)
+
+
+11.
+SELECT semestr.semestr_id, przedmiot.nazwa FROM semestr JOIN przedmiot_semestr USING(semestr_id) JOIN przedmiot USING(kod_przed) WHERE przedmiot.rodzaj = 'o' ORDER BY semestr.semestr_id;
+
+
+12. 
+SELECT przedmiot.nazwa FROM przedmiot WHERE przedmiot.nazwa LIKE '%(ang.)%';
+                          nazwa                           
+----------------------------------------------------------
+ Algebra (ang.)
+ Matematyka dyskretna (ang.)
+ Analiza numeryczna (ang.)
+ Programowanie (ang.)
+ Logika dla informatyków (ang.)
+ Analiza matematyczna (ang.)
+ Algorytmy i struktury danych (ang.)
+ Inżynieria oprogramowania (ang.)
+ Sieci komputerowe (ang.)
+ Programowanie obiektowe (ang.)
+ Bazy danych (ang.)
+ Dazy danych (ang.)
+ Systemy operacyjne (ang.)
+ Wstęp do informatyki (ang.)
+ Grafika komputerowa (ang.)
+ Modelowanie zjawisk przyrodniczych (ang.)
+ Kompresja danych (ang.)
+ Kurs języka Java (ang.)
+ Kurs programowania pod Windows w technologii .NET (ang.)
+ Kurs języka C++ (ang.)
+ Kurs języka ANSI C z elementami C++ (ang.)
+ Projekt programistyczny (ang.)
+ Seminarium: Architektury systemów komputerowych (ang.)
+(23 rows)
+
+
+13.
+SELECT CAST(wybor.data AS date) FROM wybor JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN semestr USING(semestr_id) WHERE semestr.nazwa = 'Semestr zimowy 2016/2017' ORDER BY wybor.data LIMIT 1;
+    data    
+------------
+ 2016-09-25
+(1 row)
+
+SELECT CAST(wybor.data AS date) FROM wybor JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN semestr USING(semestr_id) WHERE semestr.nazwa = 'Semestr zimowy 2016/2017' ORDER BY wybor.data DESC LIMIT 1;
+    data    
+------------
+ 2017-01-19
+(1 row)
+
+
+14.
+(SELECT przedmiot.nazwa FROM przedmiot WHERE przedmiot.rodzaj = 'k') EXCEPT (SELECT przedmiot.nazwa FROM przedmiot JOIN przedmiot_semestr USING(kod_przed) WHERE przedmiot.rodzaj = 'k');
+                              nazwa                               
+------------------------------------------------------------------
+ Programowanie z Serwerami Baz Danych
+ Kurs Borland Delphi i Interbase
+ Kurs języka Perl
+ Kurs programowania w języku Concurrent Clean
+ Kurs administrowania Linuxem
+ Skład komputerowy
+ Kurs języka Nemerle
+ Kurs Apple WebObjects - technologia którą chcesz poznać
+ Kurs UML i innych podstawowych standardów obiektowych
+ Systemy Zarządzania Bazami Danych
+ Bazy danych w praktyce
+ Technologie internetowe 2
+ Język francuski
+ Programowanie komputerów kieszonkowych
+ Programowanie multimediów: Acction Script 2
+ Kurs programowania pod PostgreSQL i Java
+ Kurs narzędzi nowoczesnego programowania
+ Kurs Csound
+ Kurs bezpieczeństwa komputerowego
+ Haskell dla zaawansowanych
+ Kurs 3ds MAX
+ Kurs języka Java (zaawansowany)
+ Kurs programowania w JSP
+ Obiekty rozproszone
+ Tworzenie systemów klasy korporacyjnej w środowisku Windows DNA
+ Technologie internetowe
+ Programowanie funkcjonalne w języku Logo
+ Zarządzanie projektem programistycznym (kurs)
+ WWW - czyli opowieści niesamoWWWite
+ Kurs programowania pod Oracle i Java
+ Kurs popularnych narzędzi kryptograficznych
+ Kurs programowania pod SQL Server 2005 i ADO.NET
+ Kurs programowania w środowisku Gnome
+ Kurs administracji i programowania pod Microsoft SQL Server 2000
+ Kurs: XML i bazy danych
+ Kurs zarządzania projektem programistycznym
+ Kurs języków skryptowych
+ Kurs programowania Open-Source
+ Kurs programowania w PHP
+ Kurs asemblera
+ Kurs programowania w środowisku ABAP/SAP
+(41 rows)
+
+
+15.
+SELECT grupa.kod_grupy FROM grupa JOIN uzytkownik USING(kod_uz) WHERE uzytkownik.imie LIKE 'P%' AND uzytkownik.nazwisko = 'Kanarek' AND grupa.rodzaj_zajec IN ('r', 'R');
+ kod_grupy 
+-----------
+      4769
+      5911
+      5491
+      5568
+(4 rows)
+
+
+16.
+SELECT grupa.kod_grupy FROM grupa JOIN uzytkownik USING(kod_uz) JOIN przedmiot_semestr USING(kod_przed_sem) JOIN przedmiot USING(kod_przed) WHERE przedmiot.nazwa LIKE 'Logika dla informatyk_w%' AND  uzytkownik.imie LIKE 'W%' AND uzytkownik.nazwisko = 'Charatonik' AND grupa.rodzaj_zajec in ('c', 'C');
+ kod_grupy 
+-----------
+      4524
+      5664
+      5002
+      5797
+      4387
+      5117
+(6 rows)
+
+
+17.
+SELECT DISTINCT u.kod_uz FROM uzytkownik u JOIN wybor w1 USING(kod_uz) JOIN grupa g1 USING(kod_grupy) JOIN przedmiot_semestr ps1 USING(kod_przed_sem) JOIN przedmiot p1 USING(kod_przed) JOIN wybor w2 ON (u.kod_uz = w2.kod_uz) JOIN grupa g2 ON (w2.kod_grupy = g2.kod_grupy) JOIN przedmiot_semestr ps2 ON (g2.kod_przed_sem = ps2.kod_przed_sem) JOIN przedmiot p2 ON (ps2.kod_przed = p2.kod_przed) WHERE p1.nazwa = 'Bazy danych' AND p2.nazwa = 'Bazy danych' AND ps1.kod_przed_sem != ps2.kod_przed_sem;
+ kod_uz 
+--------
+   2242
+   2252
+   2256
+   2480
+   2493
+   2521
+   2551
+   2570
+   2574
+   2593
+   2844
+   2849
+   2870
+   2876
+   2895
+   2928
+   2944
+   2951
+   2953
+   2954
+   3066
+   3268
+   3314
+   3319
+   3345
+   3377
+   3420
+   3425
+   3717
+   3758
+   3780
+   3825
+   3859
+   3907
+(34 rows)
+
+
+18.
+(SELECT kod_uz FROM uzytkownik) EXCEPT (SELECT w_ktoryms_nie_zapisali_sie.kod_uz FROM ((SELECT uzytkownik.kod_uz, semestr.semestr_id FROM uzytkownik, semestr) EXCEPT (SELECT DISTINCT wybor.kod_uz, przedmiot_semestr.semestr_id FROM wybor JOIN grupa USING(kod_grupy) JOIN przedmiot_semestr USING(kod_przed_sem) ) ) w_ktoryms_nie_zapisali_sie);
+

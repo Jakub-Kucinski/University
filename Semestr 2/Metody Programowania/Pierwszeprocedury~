@@ -1,0 +1,11 @@
+#lang racket
+
+(define kwadrat-dwoch
+  (if (< a b)
+      (if (< a c)
+          (+ (* c c) (* b b))
+          (+ (* b b) (* a a)))
+      (if (< b c)
+          (+ (* c c) (* a a))
+          (+ (* a a) (* b b)))
+      ))

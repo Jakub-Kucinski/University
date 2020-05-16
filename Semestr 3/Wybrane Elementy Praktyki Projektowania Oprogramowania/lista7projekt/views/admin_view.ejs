@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sklep internetowy</title>
+    <link rel="stylesheet" type="text/css" href="styles/my_styles.css">
+</head>
+
+<body>
+    <div style="display: inline;">Jesteś zalogowany jako administrator: <%= admin %></div>
+    <div style=" display: inline;">
+        <button>Wyloguj się</button>
+    </div>
+    <div>
+        <a href="/users">Lista klientów</a>
+        <a href="/orders">Pogdląd złożonych zamówień</a>
+        <a href="/baskets">Pogdląd otwartych zamówień</a>
+        <a href="/add">Formularz dodawania produktu</a>
+    </div>
+    <div style=" left: 550px;">
+        <h1>EkoWarzywko</h1>
+    </div>
+    <div>
+        <p>Witamy na stronie internetowego sklepu EkoWarzywko. Tylko u nas znajdzesz tysiące świeżych warzyw i owoców
+            wprost z najwyższej jakości upraw ekologicznych. Dotawa już w 24 godziny od złożenia zamówienia. </p>
+    </div>
+    <div style="left: 350px;">
+        <form action="#" id="menu_search_form" class="menu_search_form">
+            <input type="text" class="search_input" placeholder="Wyszukaj produkt" required="required">
+            <button class="menu_search_button"><img src="/images/search.png" alt=""></button>
+        </form>
+    </div>
+    <ul>
+        <% products.forEach(function(product){ %>
+        <div class="product">
+            <div>
+                <h2><%= product.name %></h2>
+            </div>
+            <div>
+                <img src=<%= product.img%> alt="" style="width: 200px; height: 200px; display:inline-block;">
+                <div style="display:inline-block;">
+                    <div>
+                        <h3>TYLKO <%= product.price %> zł/kg</h3>
+                    </div>
+                    <div>Opis produktu:</div>
+                    <div>
+                        <h4><%= product.desc %></h4>
+                    </div>
+                    <div>Tagi: <%= product.tags %></div>
+                </div>
+            </div>
+            <button id="button1" class="menu_search_button">Usuń</button>
+            <!--<button class="menu_search_button">Modyfikuj</button>-->
+            <a href="\edit">Modyfikuj</a>
+        </div>
+        <% })%>
+    </ul>
+
+</body>
+<script>
+    console.log("hello world")
+    const button = document.getElementById('button1');
+    button.addEventListener('click', function (e) {
+        console.log('button was clicked');
+    });
+</script>
+
+</html>

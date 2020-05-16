@@ -1,0 +1,34 @@
+# depslib dependency file v1.0
+1543690334 source:/home/kuba/Programowanie/Programowanie_w_C/Kolejka/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+	"Struct.h"
+
+1543596133 source:/home/kuba/Programowanie/Programowanie_w_C/Kolejka/Kolejka.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+	"Kolejka.h"
+
+1543596350 /home/kuba/Programowanie/Programowanie_w_C/Kolejka/Kolejka.h
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+
+1543955747 source:/home/kuba/Programowanie/Programowanie_w_C/Kolejka/Struct.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+	"Struct.h"
+
+1543955752 /home/kuba/Programowanie/Programowanie_w_C/Kolejka/Struct.h
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+

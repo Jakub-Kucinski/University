@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EkoWarzywko - Logowanie administratora</title>
+    <link rel="stylesheet" type="text/css" href="styles/my_styles.css">
+</head>
+
+<body>
+    <div>Wprowadź swoje dane logowania administatora sklepu </div>
+    <div>
+        <form action="/login_admin_post" method="POST" id="admin_log_form">
+            Nazwa użytkownika: <input name="name" type="text"><br>
+            Hasło: <input name="paswd" type="password" value="FakePSW"><br>
+        <!-- <button type="submit" form="admin_log_form" value="Submit">Zaloguj się</button> -->
+        <input type="submit" name="logowanie" value="Zaloguj się"/>
+        </form>
+    </div>
+
+</body>
+
+</html>

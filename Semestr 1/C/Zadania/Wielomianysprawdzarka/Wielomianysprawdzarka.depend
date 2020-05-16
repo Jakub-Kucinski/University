@@ -1,0 +1,23 @@
+# depslib dependency file v1.0
+1545859020 source:/home/kuba-ubuntu-18-04/Documents/Programing/Programowanie_w_C/Wielomianysprawdzarka/main.c
+	<stdio.h>
+	<stdlib.h>
+	"Wielomian2.h"
+	<stdbool.h>
+	<ctype.h>
+
+1545771525 source:/home/kuba-ubuntu-18-04/Documents/Programing/Programowanie_w_C/Wielomianysprawdzarka/Wielomiany.c
+
+1545858933 source:/home/kuba-ubuntu-18-04/Documents/Programing/Programowanie_w_C/Wielomianysprawdzarka/Wielomiany2.c
+	<stdio.h>
+	<stdlib.h>
+	"Wielomian2.h"
+
+1545767429 /home/kuba-ubuntu-18-04/Documents/Programing/Programowanie_w_C/Wielomianysprawdzarka/Wielomiany2.c
+	<stdio.h>
+	<stdlib.h>
+
+1545858529 /home/kuba-ubuntu-18-04/Documents/Programing/Programowanie_w_C/Wielomianysprawdzarka/Wielomian2.h
+	<stdio.h>
+	<stdlib.h>
+

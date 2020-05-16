@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+        padding: 20px;
+        }
+        </style>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <div>
+            <form method="post">
+                <div>
+                    <table>
+                        <tr>
+                            <td colspan="1"> Imie: <%= imie %> </td>
+                            <td colspan="5"> Nazwisko: <%= nazwisko %> </td>
+                            <td colspan="5"> Nazwa zajęć: <%= nazwazajec %> </td>
+                        </tr>
+                        <tr>
+                            <td>Numer zadania:</td> 
+                        <% for ( var i=1; i<=10; i++) { %>
+                            <td><%=  i %></td> 
+                            <% } %>
+                        </tr>
+                        <tr>
+                            <td> Liczba punktów: </td> 
+                            <td> <%=  zadanie1 %> </td> 
+                            <td> <%=  zadanie2 %> </td> 
+                            <td> <%=  zadanie3 %> </td> 
+                            <td> <%=  zadanie4 %> </td> 
+                            <td> <%=  zadanie5 %> </td> 
+                            <td> <%=  zadanie6 %> </td> 
+                            <td> <%=  zadanie7 %> </td> 
+                            <td> <%=  zadanie8 %> </td> 
+                            <td> <%=  zadanie9 %> </td> 
+                            <td> <%=  zadanie10 %> </td> 
+                            </table> 
+                        </tr>
+                    
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

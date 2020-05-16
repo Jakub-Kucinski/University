@@ -1,0 +1,26 @@
+sudo apt update
+sudo apt upgrade
+sudo apt install postgresql postgresql-contrib
+sudo su postgres
+psql
+ALTER ROLE postgres WITH PASSWORD 'postgres';
+CREATE DATABASE online_shop;
+\q
+CTRL+D
+
+sudo nano /etc/postgresql/10/main/pg_hba.conf
+// W nano poruszasz się strzałkami, wpisujesz normalnie znaki i usuwasz znaki delete. 
+// Żeby zapisać zmiany klikasz CTRL + o (o, nie zero), potwierdzasz nazwę pliku klikając enter.
+
+// and change the line 
+# Database administrative login by Unix domain socket
+local   all             postgres                                peer
+
+// to
+# Database administrative login by Unix domain socket
+local   all             postgres                                md5
+
+sudo /etc/init.d/postgresql reload
+
+// Trzeba zainstalować też bibliotekę do komunikacji z bazą przez js
+npm install pg

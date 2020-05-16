@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EkoWarzywko - otwarte zamowienia</title>
+    <link rel="stylesheet" type="text/css" href="styles/my_styles.css">
+</head>
+
+<body>
+    <div style="display: inline;">Jesteś zalogowany jako administrator: <%= user %></div>
+    <div style=" display: inline;">
+        <a href="/">Wyloguj się</a>
+    </div>
+    <div>
+        <a href="/admin" style="display: inline;">
+            Powrót na stronę główną panelu administratora
+        </a>
+    </div>
+
+    <div style=" left: 550px;">
+        <h1>EkoWarzywko</h1>
+    </div>
+    <div style="left: 550px;">
+        <p>Otwarte zamówienia klientów </p>
+    </div>
+    <ul>
+        <% orders.forEach(function(order){ %>
+        <div class="orders">
+            <div>
+                <div>
+                    Klient: <%= order.usrname %>
+                </div>
+                <div>Numer koszyka: <%= order.id %></div>
+                <div>Wartość koszyka: <%= order.value %></div>
+                <div>Produkty w koszyku: </div>
+            </div>
+            <ul>
+
+                <% order.products.forEach(function(product){ %>
+                <li><%= product.name %> <%= product.date %></li>
+                <% })%>
+
+            </ul>
+        </div>
+        <% })%>
+    </ul>
+
+
+</body>
+
+</html>

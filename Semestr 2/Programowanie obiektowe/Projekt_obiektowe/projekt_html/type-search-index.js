@@ -1,0 +1,1 @@
+typeSearchIndex = [{"p":"projekt","l":"Adres"},{"p":"projekt","l":"Aplikacja"},{"p":"projekt","l":"DatabaseHandler"},{"p":"projekt","l":"Firma"},{"p":"projekt","l":"Interfejs_konto"},{"p":"projekt","l":"Klient"},{"p":"projekt","l":"Konto_firmowe"},{"p":"projekt","l":"Konto_osobiste"},{"p":"projekt","l":"Logowanie"},{"p":"projekt","l":"Lokata"},{"p":"projekt","l":"Przelew"}]

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sklep internetowy</title>
+    <link rel="stylesheet" type="text/css" href="styles/my_styles.css">
+</head>
+
+<body>
+    <div style="display: inline;">Jesteś zalogowany jako: <%= user %></div>
+    <div style=" display: inline;">
+        <a href="/">Wyloguj się</a>
+    </div>
+    <div>
+        <a href="/log" style="display: inline;">Powrót na stronę główną</a>
+    </div>
+
+    <div style=" left: 550px;">
+        <h1>EkoWarzywko</h1>
+    </div>
+    <div style="left: 550px;">
+        <p>Koszyk klienta <%= user %>. </p>
+    </div>
+    <div style="left: 510px;"> <button id="pay">
+            <h2>Zamów zakupy i zapłać</h2>
+        </button></div>
+    <ul>
+        <% items.forEach(function(product){ %>
+        <div class="basket">
+            <div>
+                <h2><%= product.name %></h2>
+            </div>
+            <div>
+                <img src=<%= product.img%> alt="" style="width: 100px; height: 100px; display:inline-block;">
+                <div style="display:inline-block;">
+                    <div>
+                        <h3>cena: <%= product.price %> zł</h3>
+                    </div>
+                    <div>Data dodania do koszyka:
+                        <h4><%= product.date %></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% })%>
+    </ul>
+
+
+</body>
+
+</html>

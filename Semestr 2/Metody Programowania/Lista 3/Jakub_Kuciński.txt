@@ -1,0 +1,106 @@
+Zadanie domowe nr 5. Lista 3 ćwiczenie 9. Jakub Kuciński
+
+a) 
+Założenia: (list? xs), (list? ys), f - procedura jednoargumentowa.
+Teza: (map f (append xs ys)) = (append (map f xs) (map f ys)).
+
+Przypominamy definicję procedury map:
+(define (map f xs)
+  (if (null? xs)
+      null
+      (cons (f (car xs))
+            (map f (cdr xs)))))
+
+oraz procedury append:
+(define (append as bs)
+  (if (null? as)
+      bs
+      (cons (car as)
+            (append (cdr as) bs))))
+
+Dowód:
+Dowód przeprowadzimy za pomocą indukcji strukturalnej dla list względem listy xs.
+
+1) (null? xs)
+Wtedy (map f (append null ys)) = z definicji append = (map f ys)
+oraz (append (map f null) (map f ys)) = dla (null? xs) z definicji append mamy = (append null (map f ys)) =
+a stąd z definicji append mamy = (map f ys).
+Czyli otrzymaliśmy (map f (append xs ys)) = (append (map f xs) (map f ys)) dla (null? xs).
+
+2) Załóżmy, że zachodzi (map f (append xs ys)) = (append (map f xs) (map f ys)) <- założenie indukcyjne.
+Weźmy dowolne x. Pokażemy że zachodzi (map f (append (cons x xs) ys)) = (append (map f (cons x xs)) (map f ys)).
+
+Mamy (map f (append (cons x xs) ys)) = z definicji append = (map f [cons {car (cons x xs)} (append {cdr (cons x xs)}) ys]) = 
+z definicji cons, car i cdr = (map f [cons x (append xs ys)]) = z definicji map = (cons [f (car {cons x (append xs ys)})] [map f (cdr {cons x (append xs ys)})]) =
+z definicji cons, car i cdr = (cons [f x] [map f (append xs ys)])
+
+oraz (append (map f (cons x xs)) (map f ys)) = z definicji map = (append [cons (f {car (cons x xs)}) (map f {cdr (cons x xs)})] [map f ys]) =
+z definicji cons, car i cdr = (append [cons (f x) (map f xs)] [map f ys]) = z definicji append = (cons [car (cons (f x) (map f xs))] (append [cdr {cons (f x) (map f xs)}] [map f ys])) =
+z definicji cons, car i cdr = (cons [f x] [append (map f xs) (map f ys)]) = z założenia indukcyjnego = (cons [f x] [map f (append xs ys)]).
+
+Zatem otrzymaliśmy (map f (append (cons x xs) ys)) = (append (map f (cons x xs)) (map f ys)).
+
+Z 1) i 2) na mocy zasady indukcji matematycznej dla list otrzymujemy (map f (append xs ys)) = (append (map f xs) (map f ys)).
+
+
+
+b) 
+Założenia: (list? xs), (list? ys), p? - pewien predykat jednoargumentowy.
+Teza: (filter p? (append xs ys)) = (append (filter p? xs) (filter p? ys)).
+
+Przypominamy definicję procedury append:
+(define (append as bs)
+  (if (null? as)
+      bs
+      (cons (car as)
+            (append (cdr as) bs))))
+
+oraz procedury filter:
+(define (filter p? xs)
+  (if (null? xs)
+      null
+      (if (p? (car xs))
+          (cons (car xs)
+                (filter p? (cdr xs)))
+          (filter p? (cdr xs)))))
+
+Dowód:
+Dowód przeprowadzimy za pomocą indukcji strukturalnej dla list względem listy xs.
+
+1) (null? xs)
+Wtedy (filter p? (append null ys)) = z definicji append = (filter p? ys)
+oraz (append (filter p? null) (filter p? ys)) = dla (null? xs) z definicji append mamy = (append null (filter p? ys)) =
+a stąd z definicji append mamy = (filter p? ys).
+Czyli otrzymaliśmy (filter p? (append xs ys)) = (append (filter p? xs) (filter p? ys)) dla (null? xs).
+
+2) Załóżmy, że zachodzi (filter p? (append xs ys)) = (append (filter p? xs) (filter p? ys)) <- założenie indukcyjne.
+Weźmy dowolne x. Pokażemy że zachodzi (filter p? (append (cons x xs) ys)) = (append (filter p? (cons x xs)) (filter p? ys)).
+
+Mamy wtedy (filter p? (append (cons x xs) ys)) = z definicji append = (filter p? [cons {car (cons x xs)} (append {cdr (cons x xs)}) ys]) =
+z definicji cons, car i cdr = (filter p? [cons x (append xs ys)])
+
+Rozważmy przypadki:
+	I) Nie zachodzi (p? x)
+	Wtedy nie zachodzi (p? (car [cons x (append xs ys)]) ponieważ (p? (car [cons x (append xs ys)]) = z definicji cons, car i cdr = (p? x).
+	Mamy więc (filter p? [cons x (append xs ys)]) = z definicji filter = (filter p? [cdr {cons x (append xs ys)}]) = 
+	z definicji cons, car i cdr = (filter p? (append xs ys))
+
+	oraz (append (filter p? (cons x xs)) (filter p? ys)) = z definicji filter = (append [filter p? {cdr (cons x xs)}] [filter p? ys]) =
+	z definicji cons, car i cdr = (append [filter p? xs] [filter p? ys]) = z założenia indukcyjnego = (filter p? (append xs ys)).
+
+	Czyli gdy nie zachodzi (p? x) otrzymaliśmy (filter p? (append (cons x xs) ys)) = (append (filter p? (cons x xs)) (filter p? ys)).
+
+	II) Zachodzi (p? x).
+	Wtedy zachodzi też (p? (car [cons x (append xs ys)]) ponieważ (p? (car [cons x (append xs ys)]) = z definicji cons, car i cdr = (p? x).
+	Mamy więc (filter p? [cons x (append xs ys)]) = z definicji filter = (cons [car {cons x (append xs ys)}] [filter p? [cdr {cons x (append xs ys)}]]) =
+	z definicji cons, car i cdr = (cons x [filter p? (append xs ys)])
+
+	oraz  (append (filter p? (cons x xs)) (filter p? ys)) = z definicji filter = (append [cons {car (cons x xs)} {filter p? (cdr (cons x xs))}] [filter p? ys]) =
+	z definicji cons, car i cdr = (append [cons x {filter p? xs}] [filter p? ys]) = z definicji append = (cons [car {cons x (filter p? xs)}] [append {cdr (cons x (filter p? xs))} {filter p? ys} =
+	z definicji cons, car i cdr = (cons x [append (filter p? xs) (filter p? ys)]) = z założenia indukcyjnego (cons x [filter p? (append xs ys)]).
+
+	Czyli gdy zachodzi (p? x) otrzymaliśmy (filter p? (append (cons x xs) ys)) = (append (filter p? (cons x xs)) (filter p? ys)).
+
+Z I) i II) otrzymujemy (filter p? (append (cons x xs) ys)) = (append (filter p? (cons x xs)) (filter p? ys)).
+
+Z 1) i 2) na mocy zasady indukcji matematycznej dla list otrzymujemy (filter p? (append xs ys)) = (append (filter p? xs) (filter p? ys)).

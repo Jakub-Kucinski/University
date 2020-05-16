@@ -1,0 +1,29 @@
+# depslib dependency file v1.0
+1544029054 source:/home/kuba/Programowanie/Programowanie_w_C/Drzewo/main.c
+	<stdio.h>
+	<stdlib.h>
+	<ctype.h>
+	"drzewo.h"
+
+1544024874 /home/kuba/Programowanie/Programowanie_w_C/Drzewo/Drzewo.h
+	<stdio.h>
+	<stdlib.h>
+
+1544025038 /home/kuba/Programowanie/Programowanie_w_C/Drzewo/wyrazenie.h
+	<stdio.h>
+	<stdlib.h>
+
+1544025254 source:/home/kuba/Programowanie/Programowanie_w_C/Drzewo/wyrazenie.c
+	<stdio.h>
+	<stdlib.h>
+	"wyrazenie.h"
+
+1544029291 /home/kuba/Programowanie/Programowanie_w_C/Drzewo/drzewo.h
+	<stdio.h>
+	<stdlib.h>
+
+1544029275 source:/home/kuba/Programowanie/Programowanie_w_C/Drzewo/drzewo.c
+	<stdio.h>
+	<stdlib.h>
+	"drzewo.h"
+

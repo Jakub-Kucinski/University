@@ -1,0 +1,431 @@
+#lang racket
+;;Jakub Kuciński
+
+(require rackunit)
+(require rackunit/text-ui)
+
+;; procedury pomocnicze
+(define (tagged-tuple? tag len x)
+  (and (list? x)
+       (=   len (length x))
+       (eq? tag (car x))))
+
+(define (tagged-list? tag x)
+  (and (pair? x)
+       (eq? tag (car x))
+       (list? (cdr x))))
+
+;; reprezentacja formuł w CNFie
+;; zmienne
+(define (var? x)
+  (symbol? x))
+
+(define (var x)
+  x)
+
+(define (var-name x)
+  x)
+
+(define (var<? x y)
+  (symbol<? x y))
+
+;; literały
+(define (lit pol var)
+  (list 'lit pol var))
+
+(define (pos x)
+  (lit true (var x)))
+
+(define (neg x)
+  (lit false (var x)))
+
+(define (lit? x)
+  (and (tagged-tuple? 'lit 3 x)
+       (boolean? (second x))
+       (var? (third x))))
+
+(define (lit-pol l)
+  (second l))
+
+(define (lit-var l)
+  (third l))
+
+;; klauzule
+(define (clause? c)
+  (and (tagged-list? 'clause c)
+       (andmap lit? (cdr c))))
+
+(define (clause . lits)
+  (cons 'clause lits))
+
+(define (clause-lits c)
+  (cdr c))
+
+(define (cnf? f)
+  (and (tagged-list? 'cnf f)
+       (andmap clause? (cdr f))))
+
+(define (cnf . clauses)
+  (cons 'cnf clauses))
+
+(define (cnf-clauses f)
+  (cdr f))
+
+;; definicja rezolucyjnych drzew wyprowadzenia
+(define (axiom? p)
+  (tagged-tuple? 'axiom 2 p))
+
+(define (axiom c)
+  (list 'axiom c))
+
+(define (axiom-clause a)
+  (second a))
+
+(define (res? p)
+  (tagged-tuple? 'resolve 4 p))
+
+(define (res x pf-pos pf-neg)
+  (list 'resolve x pf-pos pf-neg))
+
+(define (res-var p)
+  (second p))
+(define (res-proof-pos p)
+  (third p))
+(define (res-proof-neg p)
+  (fourth p))
+
+(define (proof? p)
+  (or (and (axiom? p)
+           (clause? (axiom-clause p)))
+      (and (res? p)
+           (var? (res-var p))
+           (proof? (res-proof-pos p))
+           (proof? (res-proof-neg p)))))
+
+;;Procedura sprawdza czy podany dowód "pf" jest poprawny, zwraca jego wynik jeśli tak, wpp #f
+(define (proof-result pf prop-cnf)
+  ;; XXX: zaimplementuj
+  ;;Procedura zwraca rezolwentę klauzul l i r względem zmiennej p
+  (define (resolvent l r p)
+    ;;Procedura pomocnicza zwraca klauzulę składającą się z literałów występujących w l i r (bez powtórzeń)
+    (define (resolvent-helper l r)
+      (if (null? l)                       ;;Jeśli l jest puste to znaczy że sprawdziliśmy całą listę l w poszukiwaniu duplikatów literałów (zwracamy r)
+          r
+          (if (eq? #f (member (car l) r)) ;;Jeśli pierwszy literał z l nie występuje w r to dodajemy go do klauzuli wynikowej, wpp sprawdzamy kolejny element l
+              (cons (car l) (resolvent-helper (cdr l) r))
+              (resolvent-helper (cdr l) r))))
+    ;;Zwróć klauzulę składającą się z literałów występujących w l i r (bez powtórzeń) z usuniętą zmienną p
+    (cons 'clause (resolvent-helper (remove (pos p) (clause-lits l))
+                                    (remove (neg p) (clause-lits r)))))
+  ;;Procedura sprawdza czy zmienna p występuje pozytywnie w klauzli positive-clause
+  (define (is-positive positive-clause p)
+    (if (eq? #f (member (pos p) (clause-lits positive-clause)))
+        #f
+        #t))
+  ;;Procedura sprawdza czy zmienna p występuje negatywnie w klauzli negative-clause
+  (define (is-negative negative-clause p)
+    (if (eq? #f (member (neg p) (clause-lits negative-clause)))
+        #f
+        #t))
+  ;;Procedura sprawdza czy klauzla (z axiomu) występuje w formule w cnfie, zwraca ją jeśli tak, wpp #f
+  (define (find-clause clause-from-axiom)
+    (if (eq? #f (member clause-from-axiom (cnf-clauses prop-cnf)))
+        #f
+        clause-from-axiom))
+  ;;Główna procedura sprawdzająca czy poprawność dowodu rezolucyjnego, wylicza jego wynik jeśli istnieje, wpp #f.
+  (define (check-proof pf)
+    (cond [(axiom? pf) (find-clause (axiom-clause pf))]         ;;Jeśli pf jest axiomem to sprawdź czy jego clauzula występuje w cnfie
+          [(res? pf) (let ([l (check-proof (res-proof-pos pf))] ;;Jeśli pf jest rezolwentą to oblicz jej lewą klauzlę i prawą klauzulę
+                           [r (check-proof (res-proof-neg pf))] ;;oraz zmienną względem której będziemy prowadzić rezolucję.
+                           [p (res-var pf)])
+                       (if (or (eq? #f l) (eq? #f r))           ;;Jeśli obliczanie którejś z klauzul zwróci fałsz, to oznacza że dowód jest niepoprawny.
+                           #f
+                           (if (and (is-positive l p) (is-negative r p)) ;;Jeśli lewa i prawa podklauzle są dowiedzione poprawnie sprawdź
+                               (resolvent l r p)                         ;;czy p wysępuje pozytywnie w lewej l i nagatywnie w prawej r
+                               #f)))]                                    ;;Jeśli tak zwróć ich rezolwentę, wpp zwróć fałsz.
+          [else #f]))                                           ;;Jeśli pf nie jest axiomem ani rezolwentą zwróć fałsz
+  ;;Wywołanie głównej procedury
+  (check-proof pf))
+
+(define (check-proof? pf prop)
+  (let ((c (proof-result pf prop)))
+    (and (clause? c)
+         (null? (clause-lits c)))))
+
+;; XXX: Zestaw testów do zadania pierwszego
+
+(define proof-result-tests
+  (test-suite
+   "Proof-result"
+   (test-case
+     "No null tests"
+     (check-equal?  (proof-result '(axiom (clause (lit #t p) (lit #t q))) (cnf (clause (lit #t 'p) (lit #t 'q)))) '(clause (lit #t p) (lit #t q)) "Blad 1")
+     ;;Przykład z treści zadania
+     (check-equal?  (proof-result '(resolve q
+                                            (resolve p (axiom (clause (lit #t p) (lit #t q)))
+                                                     (axiom (clause (lit #f p) (lit #t q))))
+                                            (resolve r (axiom (clause (lit #f q) (lit #t r)))
+                                                     (axiom (clause (lit #f q) (lit #f r)))))
+                                  '(cnf (clause (lit #f p) (lit #t q))
+                                        (clause (lit #t p) (lit #t q))
+                                        (clause (lit #f q) (lit #t r))
+                                        (clause (lit #f q) (lit #f r)))) '(clause) "Blad 2")
+     ;; r negatywne w pierwszej klauzuli
+     (check-equal? (proof-result  '(resolve r (axiom (clause (lit #f q) (lit #f r)))
+                                            (axiom (clause (lit #f q) (lit #f r))))
+                                  '(cnf (clause (lit #f q) (lit #f r)))) #f "Blad 3")
+     ;; r pozytywne w drugiej klauzli 
+     (check-equal? (proof-result '(resolve r (axiom (clause (lit #f q) (lit #t r)))
+                                            (axiom (clause (lit #f q) (lit #t r))))
+                                 '(cnf (clause (lit #f q) (lit #t r)))) #f "Blad 4")
+     ;; p nie występuje w pierwszej klauzuli
+     (check-equal? (proof-result '(resolve p (axiom (clause (lit #f q) (lit #t r)))
+                                            (axiom (clause (lit #f p) (lit #t q))))
+                                 '(cnf (clause (lit #f p) (lit #t q))
+                                        (clause (lit #t p) (lit #t q))
+                                        (clause (lit #f q) (lit #t r))
+                                        (clause (lit #f q) (lit #f r)))) #f "Blad 5")
+     ;;p nie występuje w drugiej klauzuli
+     (check-equal? (proof-result '(resolve p (axiom (clause (lit #t p) (lit #t q)))
+                                            (axiom (clause (lit #f q) (lit #t r))))
+                                 '(cnf (clause (lit #f p) (lit #t q))
+                                        (clause (lit #t p) (lit #t q))
+                                        (clause (lit #f q) (lit #t r))
+                                        (clause (lit #f q) (lit #f r)))) #f "Blad 6"))
+   (test-case
+    "Tests with null"
+    (check-equal? (proof-result '(axiom (clause (lit #t p) (lit #t q))) (cnf)) #f "Blad 7"))
+   ))
+(run-tests proof-result-tests)
+
+;; Wewnętrzna reprezentacja klauzul
+
+(define (sorted? ord? xs)
+  (or (null? xs)
+      (null? (cdr xs))
+      (and (ord? (car xs)
+                (cadr xs))
+           (sorted? ord? (cdr xs)))))
+
+(define (sorted-varlist? xs)
+  (and (andmap var? xs)
+       (sorted? var<? xs)))
+
+(define (res-clause pos neg pf)
+  (list 'res-clause pos neg pf))
+
+(define (res-clause-pos rc)
+  (second rc))
+(define (res-clause-neg rc)
+  (third rc))
+(define (res-clause-proof rc)
+  (fourth rc))
+
+(define (res-clause? p)
+  (and (tagged-tuple? 'res-clause 4 p)
+       (sorted-varlist? (second p))
+       (sorted-varlist? (third  p))
+       (proof? (fourth p))))
+
+;; implementacja zbiorów / kolejek klauzul do przetworzenia
+
+(define clause-set-empty
+  '(stop () ()))
+
+(define (clause-set-add rc rc-set)
+  (define (eq-cl? sc)
+    (and (equal? (res-clause-pos rc)
+                 (res-clause-pos sc))
+         (equal? (res-clause-neg rc)
+                 (res-clause-neg sc))))
+  (define (add-to-stopped sset)
+    (let ((procd  (cadr  sset))
+          (toproc (caddr sset)))
+      (cond
+       [(null? procd) (list 'stop (list rc) '())]
+       [(or (memf eq-cl? procd)
+            (memf eq-cl? toproc))
+        sset]
+       [else (list 'stop procd (cons rc toproc))])))
+  (define (add-to-running rset)
+    (let ((pd  (second rset))
+          (tp  (third  rset))
+          (cc  (fourth rset))
+          (rst (fifth  rset)))
+      (if (or (memf eq-cl? pd)
+              (memf eq-cl? tp)
+              (eq-cl? cc)
+              (memf eq-cl? rst))
+          rset
+          (list 'run pd tp cc (cons rc rst)))))
+  (if (eq? 'stop (car rc-set))
+      (add-to-stopped rc-set)
+      (add-to-running rc-set)))
+
+(define (clause-set-done? rc-set)
+  (and (eq? 'stop (car rc-set))
+       (null? (caddr rc-set))))
+
+(define (clause-set-next-pair rc-set)
+  (define (aux rset)
+    (let* ((pd  (second rset))
+           (tp  (third  rset))
+           (nc  (car tp))
+           (rtp (cdr tp))
+           (cc  (fourth rset))
+           (rst (fifth  rset))
+           (ns  (if (null? rtp)
+                    (list 'stop (cons cc (cons nc pd)) rst)
+                    (list 'run  (cons nc pd) rtp cc rst))))
+      (cons cc (cons nc ns))))
+  (if (eq? 'stop (car rc-set))
+      (let ((pd (second rc-set))
+            (tp (third  rc-set)))
+        (aux (list 'run '() pd (car tp) (cdr tp))))
+      (aux rc-set)))
+
+(define (clause-set-done->clause-list rc-set)
+  (and (clause-set-done? rc-set)
+       (cadr rc-set)))
+
+;; konwersja z reprezentacji wejściowej na wewnętrzną
+
+(define (clause->res-clause cl)
+  (let ((pos (filter-map (lambda (l) (and (lit-pol l) (lit-var l)))
+                         (clause-lits cl)))
+        (neg (filter-map (lambda (l) (and (not (lit-pol l)) (lit-var l)))
+                         (clause-lits cl)))
+        (pf  (axiom cl)))
+    (res-clause (sort pos var<?) (sort neg var<?) pf)))
+
+;; tu zdefiniuj procedury pomocnicze, jeśli potrzebujesz
+
+;;Procedura pomocnicza sprawdzająca czy istnieje zmienna taka, że występuje w obu listach l1 i l2
+;;Korzystam z faktu, że listy literałów są uporządkowane alfabetycznie przez predykat var<?
+;;Jeśli taka zmienna istnieje, zwraca ją, wpp #f.
+(define (find-same-var-in-lists l1 l2)
+    (if (or (null? l1) (null? l2))                       ;;Jeśli któraś z list jest pusta, zwracamy #f
+        #f
+        (if (eq? (car l1) (car l2))                      ;;Jeśli pierwsze elementy list są równe, zwróć pierwszy z nich
+            (car l1)
+            (if (var<? (car l1) (car l2))                ;;Jeśli car l1 jest mniejszy od car l2 to znaczy, żę car l1 jest
+                (find-same-var-in-lists (cdr l1) l2)     ;;najmniejszy ze wszystkich elementów w l1 i l2, kontynuuj sprawdzanie dla cdr l1 i l2,
+                (find-same-var-in-lists l1 (cdr l2)))))) ;;wpp car l2 jest najmniejszy i kontunuujemy sprawdzanie dla l1 i cdr l2
+
+;;Procedura sprawdza czy klauzula jest trywialna (spełnialna dla każdego wartościowania)
+(define (rc-trivial? rc)
+  ;; XXX: uzupełnij
+  (if (eq? #f (find-same-var-in-lists (res-clause-pos rc) (res-clause-neg rc))) ;;Jeśli istnieje zmienna p, taka że występuje w zmiennych pozytywnych
+      #f                                                                        ;;i zmiennych negatywnych klauzli to klazula jest trywialna.
+      #t))
+
+;;Procedura zwraca rezolwentę dwóch klauzul lub #f gdy ta nie istnieje
+(define (rc-resolve rc1 rc2)
+  ;; XXX: uzupełnij
+  ;;Procedura łączy dwie listy w jedną bez powtórzeń.
+  ;;Działanie procedury jest analogiczne do procedury find-same-var-in-lists. Wykorzystuje fakt, że zmienne są uporządkowane alfabetycznie.
+  (define (unite l1 l2)
+    (cond [(null? l1) l2]
+          [(null? l2) l1]
+          [(eq? (car l1) (car l2)) (cons (car l1) (unite (cdr l1) (cdr l2)))]
+          [(var<? (car l1) (car l2)) (cons (car l1) (unite (cdr l1) l2))]
+          [else (cons (car l2) (unite l1 (cdr l2)))]))
+
+  ;;Sprawdzenie czy istnieje zmienna należąca jednocześnie do zmiennych pozytywnych rc1 i negatywnych rc2
+  (let ([p (find-same-var-in-lists (res-clause-pos rc1) (res-clause-neg rc2))])
+    (if (eq? #f p) ;;Jeśli nie istnieje taka zmienna, to sprawdzamy czy istnieje zmienna należąca jednocześnie do pozytywnych rc1 i negatywnych rc2
+        (let ([p (find-same-var-in-lists (res-clause-pos rc2) (res-clause-neg rc1))])
+          (if (eq? #f p) ;;Jeśli nie istnieje to znaczy że nie można utworzyć rezolwenty tych klauzul, zwracamy #f
+              #f
+              (let ([new-positives (unite (res-clause-pos rc1) (remove p (res-clause-pos rc2)))] ;;Tworzymy nowe listy zmiennych pozytywnych i negatywnych
+                    [new-negatives (unite (remove p (res-clause-neg rc1)) (res-clause-neg rc2))] ;;w oparciu o zmienne w rc1 i rc2. Usuwamy z odpowiednich list
+                    [new-proof (res p (res-clause-proof rc2) (res-clause-proof rc1))])           ;;zmienną względej której prowadzimy rezolucję. Tworzymy
+                (res-clause new-positives new-negatives new-proof))))                            ;;ścieżkę skąd pochodzi nowa klauzula (nowy dowód).
+         (let ([new-positives (unite (remove p (res-clause-pos rc1)) (res-clause-pos rc2))]      ;;Zwracamy nową klauzulę.
+               [new-negatives (unite (res-clause-neg rc1) (remove p (res-clause-neg rc2)))]      ;;Analogicznie postępujemy w przypadku gdy istniała wspólna
+               [new-proof (res p (res-clause-proof rc1) (res-clause-proof rc2))])                ;;zmienna pozytywnych rc1 i negatywnych rc2.
+           (res-clause new-positives new-negatives new-proof)))))
+
+(define (fixed-point op start)
+  (let ((new (op start)))
+    (if (eq? new false)
+        start
+        (fixed-point op new))))
+
+(define (cnf->clause-set f)
+  (define (aux cl rc-set)
+    (clause-set-add (clause->res-clause cl) rc-set))
+  (foldl aux clause-set-empty (cnf-clauses f)))
+
+(define (get-empty-proof rc-set)
+  (define (rc-empty? c)
+    (and (null? (res-clause-pos c))
+         (null? (res-clause-neg c))))
+  (let* ((rcs (clause-set-done->clause-list rc-set))
+         (empty-or-false (findf rc-empty? rcs)))
+    (and empty-or-false
+         (res-clause-proof empty-or-false))))
+
+(define (improve rc-set)
+  (if (clause-set-done? rc-set)
+      false
+      (let* ((triple (clause-set-next-pair rc-set))
+             (c1     (car  triple))
+             (c2     (cadr triple))
+             (rc-set (cddr triple))
+             (c-or-f (rc-resolve c1 c2)))
+        (if (and c-or-f (not (rc-trivial? c-or-f)))
+            (clause-set-add c-or-f rc-set)
+            rc-set))))
+
+(define (prove cnf-form)
+  (let* ((clauses (cnf->clause-set cnf-form))
+         (sat-clauses (fixed-point improve clauses))
+         (pf-or-false (get-empty-proof sat-clauses)))
+    (if (eq? pf-or-false false)
+        'sat
+        (list 'unsat pf-or-false))))
+
+;; XXX: Zestaw testów do zadania drugiego
+(define rc-trivial-tests
+  (test-suite
+   "Trivial tests"
+   (test-case
+     "No null tests"
+     (check-equal? (rc-trivial? (res-clause '(a c e g) '(b d f h) true)) #f "Blad 1")
+     (check-equal? (rc-trivial? (res-clause '(c d f g) '(e f g h i) true)) #t "Blad 2"))
+   (test-case
+    "Tests with null"
+    (check-equal? (rc-trivial? (res-clause '(a c e g) '() true)) #f "Blad 3")
+    (check-equal? (rc-trivial? (res-clause '() '(b d f h) true)) #f "Blad 4")
+    (check-equal? (rc-trivial? (res-clause '() '() true)) #f "Blad 5"))
+   ))
+(run-tests rc-trivial-tests)
+
+
+(define resolve-by-prove-tests
+  (test-suite
+   "Resolve-prove"
+   (test-case
+     "No null tests"
+     (check-equal? (check-proof? (cadr (prove '(cnf (clause (lit #f p) (lit #t q))
+                                (clause (lit #t p) (lit #t q))
+                                (clause (lit #f q) (lit #t r))
+                                (clause (lit #f q) (lit #f r)))))
+                                 '(cnf (clause (lit #f p) (lit #t q))
+                                (clause (lit #t p) (lit #t q))
+                                (clause (lit #f q) (lit #t r))
+                                (clause (lit #f q) (lit #f r)))) #t "Blad 1")
+     (check-equal? (check-proof? (cadr (prove '(cnf (clause (lit #f p))
+                                                    (clause (lit #t p)))))
+                                 '(cnf (clause (lit #f p))
+                                                    (clause (lit #t p)))) #t "Blad 2")
+     (check-equal? (prove '(cnf (clause (lit #f p))
+                               (clause (lit #t q) (lit #f r))
+                               (clause (lit #f q) (lit #t r)))) 'sat "Blad 3"))
+   (test-case
+    "Tests with null"
+    (check-equal? (prove '(cnf)) 'sat "Blad 4"))
+   ))
+(run-tests resolve-by-prove-tests)
+

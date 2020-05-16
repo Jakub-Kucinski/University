@@ -1,0 +1,89 @@
+\documentclass[11pt,wide]{article}
+
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx} 
+
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{verbatim}
+\usepackage{xcolor}
+
+\usepackage{hyperref}
+\usepackage{ textcomp }
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=green,
+    pdftitle={Sharelatex Example},
+    bookmarks=true,
+}
+
+\newcommand\numeq[1]%
+  {\stackrel{\scriptscriptstyle \mkern-1.5mu#1\mkern-1.5mu }{=}}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+\newtheorem{rysunek}{Rysunek}
+
+% Marginesy
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\title{Problem set 3\textdegree}
+\date{Wrocław, March 14, 2020}
+\author{Jakub Kuciński, Pratik Ghosal}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty} 
+\tableofcontents
+
+
+\section{Problem 9\textdegree}
+\subsection{a)}
+As $X$ has uniform distribution and $x \in [-2,2]$ then we have $f_X(x)=\frac{1}{4}$ and consequently \\
+\(\displaystyle F_X(s) = \int_{-2}^s \frac{1}{4} \mathop{dx} = \frac{s+2}{4}\).\\
+\(Y = |X|\)\\
+$t \in [0,2]$\\
+\(F_Y(t) = P(Y<t) = P(|X|<t) = P(-t<X<t)\)\\
+\(F_Y(t) = P(X<t) - P(X<-t) = F_X(t) - F_X(-t)\).\\
+\(\displaystyle F_Y(t) = F_X(t) - F_X(-t) = \int_{-2}^t \frac{1}{4} \mathop{dx} - \int_{-2}^{-t} \frac{1}{4} \mathop{dx} = 
+\frac{t+2}{4} - \frac{-t+2}{4} = \frac{t}{2} \).\\
+As \(\displaystyle \left( F_Y(t)\right) ' = f_Y(t) \) we get \(\displaystyle f_Y(t) = \left( \frac{t}{2}\right) ' = \frac{1}{2} \).
+
+\subsection{b)}
+As $X$ has uniform distribution and $x \in [-1,1]$ then we have 
+$f_X(x)=\frac{1}{2}$ 
+and consequently \\
+\(\displaystyle F_X(s) = \int_{-1}^s \frac{1}{2} \mathop{dx} = \frac{s+1}{2}\).\\
+\(Y = X^3\)\\
+\( t\in [-1,1]\)\\
+\(F_Y(t) = P(Y<t) = P(X^3<t) = P(X<\sqrt[3]{t}) = F_X(\sqrt[3]{t}) \) \\
+\(\displaystyle (F_Y(t))' = (F_X(\sqrt[3]{t}))' \) \\
+\(\displaystyle f_Y(t) = f_X(\sqrt[3]{t}) \frac{1}{3\sqrt[3]{t^2}} = \frac{1}{2} \cdot \frac{1}{3\sqrt[3]{t^2}} = 
+\frac{1}{6\sqrt[3]{t^2}} \) \\ \\
+\(Z = X^2\)\\
+\( t\in [0,1]\)\\
+\(\displaystyle F_Z(t) = P(Z<t) = P(X^2<t) = P(-\sqrt{t}<X<\sqrt{t}) = P(X<\sqrt{t}) - P(X<-\sqrt{t}) = \) \\
+\(\displaystyle = F_X(\sqrt{t}) - F_X(-\sqrt{t}) \) \\
+\(\displaystyle F_Z(t) = F_X(\sqrt{t}) - F_X(-\sqrt{t}) \) \\
+\(\displaystyle (F_Z(t))' = (F_X(\sqrt{t}) - F_X(-\sqrt{t}))' \) \\
+\(\displaystyle f_Z(t) = f_X(\sqrt{t}) \cdot \frac{1}{2\sqrt{t}} + f_X(-\sqrt{t}) \cdot \frac{1}{2\sqrt{t}} = \frac{1}{2\sqrt{t}} \)
+
+\end{document}

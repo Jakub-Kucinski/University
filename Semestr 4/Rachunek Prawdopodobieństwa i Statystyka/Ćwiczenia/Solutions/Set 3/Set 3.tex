@@ -1,0 +1,179 @@
+\documentclass[11pt,wide]{article}
+
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx} 
+
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{verbatim}
+\usepackage{xcolor}
+
+\usepackage{hyperref}
+\usepackage{ textcomp }
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=green,
+    pdftitle={Sharelatex Example},
+    bookmarks=true,
+}
+
+\newcommand\numeq[1]%
+  {\stackrel{\scriptscriptstyle \mkern-1.5mu#1\mkern-1.5mu }{=}}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+\newtheorem{rysunek}{Rysunek}
+
+% Marginesy
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\title{Problem set 3\textdegree}
+\date{Wrocław, March 14, 2020}
+\author{Jakub Kuciński, Pratik Ghosal}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty} 
+\tableofcontents
+
+
+\section{Problem 1\textdegree}
+\(\displaystyle P(A \cap B) = \frac{1}{4}, \; P(A^C) = \frac{1}{3}, \; P(B) = \frac{1}{2} \). \\
+We know that \(\displaystyle P(A) + P(A^C) = P(\Omega) = 1\). \\
+Hence \(\displaystyle P(A) = \frac{2}{3}\). \\
+By inclusion–exclusion principle we get: \\
+\(\displaystyle P(A \cup B) = P(A) + P(B) - P(A\cap B) = \frac{2}{3} + \frac{1}{2} - \frac{1}{4} = \frac{11}{12}\).
+
+\section{Problem 2\textdegree}
+
+\section{Problem 3\textdegree}
+\(\displaystyle P(X=k) = \binom{n_1}{k} p^k (1-p)^{n_1-k} \) \\
+\(\displaystyle P(Y=k) = \binom{n_2}{k} p^k (1-p)^{n_2-k} \) \\
+As \(\displaystyle Z = X + Y \) we get \(\displaystyle P(Z=k) = \sum_{i=0}^k P(X=i, Y=k-i) \). \\
+From independency of X and Y we have:\\ \(\displaystyle P(Z=k) = \sum_{i=0}^k P(X=i, Y=k-i) = \sum_{i=0}^k P(X=i)\cdot P(Y=k-i) = \) \\ 
+\( \displaystyle = \sum_{i=0}^k \binom{n_1}{i} p^i (1-p)^{n_1-i}\cdot \binom{n_2}{k-i} p^{k-i} (1-p)^{n_2-k+i} = 
+p^k \cdot p^{n_1 + n_2 - k} \sum_{i=0}^k \binom{n_1}{i} \binom{n_2}{k-i} \numeq{(*)} \) \\
+\(\displaystyle \numeq{(*)} p^k \cdot p^{n_1 + n_2 - k} \binom{n_1 + n_2}{k} \).\\
+(*) is equality we know from discrete mathematics course: from group of \(n_1\) women and \(n_2\) men we can choose \(k\) people to reprezentation in two ways: \\
+1. Choose \(k\) people from all of \(n_1 + n_2\) people. \\
+2. Choose \(i\) women from all \(n_1\) women and \(k-i\) men from all \(n_2\) men, for \(i=0, 1, \ldots k\).\\
+So we got \(\displaystyle P(Z=k) = p^k \cdot p^{n_1 + n_2 - k} \binom{n_1 + n_2}{k} \) which means \(Z\sim B(n_1+n_2, p)\).
+
+\section{Problem 4\textdegree}
+\(\displaystyle P(X=k) = e^{-\lambda_1} \frac{\lambda_1^k}{k!} \) \\
+\(\displaystyle P(Y=k) = e^{-\lambda_2} \frac{\lambda_2^k}{k!} \) \\
+As \(\displaystyle Z = X + Y \) we get \(\displaystyle P(Z=k) = \sum_{i=0}^k P(X=i, Y=k-i) \). \\
+From independency of X and Y we have:\\ \(\displaystyle P(Z=k) = \sum_{i=0}^k P(X=i, Y=k-i) = \sum_{i=0}^k P(X=i)\cdot P(Y=k-i) = \)\\
+\(\displaystyle = \sum_{i=0}^k e^{-\lambda_1} \frac{\lambda_1^i}{i!} \cdot e^{-\lambda_2} \frac{\lambda_2^{k-i}}{(k-i)!} =
+e^{-(\lambda_1 + \lambda_2)} \sum_{i=0}^k \frac{\lambda_1^i}{i!} \frac{\lambda_2^{k-i}}{(k-i)!} = 
+e^{-(\lambda_1 + \lambda_2)} \frac{1}{k!} \sum_{i=0}^k \binom{k}{i} \lambda_1^i \lambda_2^{k-i} \numeq{(*)} \) \\
+\(\displaystyle \numeq{(*)} e^{-(\lambda_1 + \lambda_2)} \frac{(\lambda_1 + \lambda_2)^k}{k!} \). \\
+(*) from binomial theorem.
+So we got \(\displaystyle P(Z=k) = e^{-(\lambda_1 + \lambda_2)} \frac{(\lambda_1 + \lambda_2)^k}{k!} \) which means \\ \(Z\sim Poisson(\lambda_1 + \lambda_2) \).
+
+\section{Problem 5\textdegree}
+By drawing a plot or simple calculating we can obtain \(y \in [0, 1]\), \(x \in [0, 2] \) and \(y\) is limited by $0$ and $x$ for $x \in [0,1]$ and limited by $0$ and $2-x$ for $x \in [1,2]$. Hence:\\
+\( \displaystyle f_1(x) = \int_0^x 3xy \mathop{dy} = \frac{3}{2}x^3,\) for  \(  x \in [0,1]\),\\
+\( \displaystyle f_1(x) = \int_0^{2-x} 3xy \mathop{dy} = \frac{3}{2}(2-x)^2 x,\) for  \(  x \in [1,2]\).\\
+Similarly $x$ is limited by $y$ and $2-y$ for $y \in [0,1]$. Hence: \\
+\( \displaystyle f_2(y) = \int_y^{2-y} 3xy \mathop{dx} = 6 y - 6 y^2,\) for  \(  y \in [0,1]\).\\
+
+
+\section{Problem 6\textdegree}
+Expected value of Y: \\
+
+\( \displaystyle EY = \int_0^1 y(6 y - 6 y^2) \mathop{dy} = 0.5\).\\
+Calculating \( \displaystyle 3=f(1,1)\neq f_1(1) \cdot f_2(1) = \frac{3}{2} \cdot 0\) we see that $X$ and $Y$ are not independent.
+
+\section{Problem 7\textdegree}
+Probability of 3 successes in k trials (that means last success was in k-th trial): \\
+\(\displaystyle P(X=k) = \binom{k-1}{2}p^3(1-p)^{k-3} \).\\
+We had to have 3 successes -- $p^3$, k-3 failures -- $(1-p)^{k-3}$ and last trial had to be success so among the rest k-2 trials there had to be 2 successes -- $\binom{k-1}{2}$ ways to do so.
+Expected value: \\
+\(\displaystyle E(X) = \sum_{k=3}^{\infty}\frac{1}{2} k^2(k-1)(1-p)^{k-3}p^3  \). \\
+(By long transformation via derivaties like in Problem 10\textdegree~we can obtain \(\sum_{k=0}^{\infty}\frac{1}{2} (k + 3)^2 (k + 2) p^3 (1 - p)^k = \frac{2 p^3 + 2 p^2 + 2 p + 3}{p} \))
+
+\section{Problem 8\textdegree}
+Photo of hand-writted Greek letters in seperate file.
+
+\section{Problem 9\textdegree}
+\subsection{a)}
+As $X$ has uniform distribution and $x \in [-2,2]$ then we have $f_X(x)=\frac{1}{4}$ and consequently \\
+\(\displaystyle F_X(s) = \int_{-2}^s \frac{1}{4} \mathop{dx} = \frac{s+2}{4}\).\\
+\(F_Y(t) = P(Y<t) = P(|X|<t) = P(-t<X<t)\)\\
+Since $t \in [0,2]$ then 
+\(F_Y(t) = P(X<t) - P(X<-t) = F_X(t) - F_X(-t)\).\\
+\(\displaystyle F_Y(t) = F_X(t) - F_X(-t) = \int_{-2}^t \frac{1}{4} \mathop{dx} - \int_{-2}^{-t} \frac{1}{4} \mathop{dx} = 
+\frac{t+2}{4} - \frac{-t+2}{4} = \frac{t}{2} \).\\
+As \(\displaystyle (F_Y(t))' = f_Y(t) \) we get \(\displaystyle f_Y(t) = \frac{t}{2}' = \frac{1}{2} \).
+
+\subsection{b)}
+As $X$ has uniform distribution and $x \in [-1,1]$ then we have 
+$f_X(x)=\frac{1}{2}$ 
+and consequently \\
+\(\displaystyle F_X(s) = \int_{-1}^s \frac{1}{2} \mathop{dx} = \frac{s+1}{2}\).\\
+\( t\in [-1,1]\)\\
+\(F_Y(t) = P(Y<t) = P(X^3<t) = P(X<\sqrt[3]{t}) = F_X(\sqrt[3]{t}) \) \\
+\(\displaystyle (F_Y(t))' = (F_X(\sqrt[3]{t}))' \) \\
+\(\displaystyle f_Y(t) = f_X(\sqrt[3]{t}) \frac{1}{3\sqrt[3]{t^2}} = \frac{1}{2} \cdot \frac{1}{3\sqrt[3]{t^2}} = 
+\frac{1}{6\sqrt[3]{t^2}} \) \\ \\
+\( t\in [0,1]\)\\
+\(\displaystyle F_Z(t) = P(Z<t) = P(X^2<t) = P(-\sqrt{t}<X<\sqrt{t}) = P(X<\sqrt{t}) - P(X<-\sqrt{t}) = \) \\
+\(\displaystyle = F_X(\sqrt{t}) - F_X(-\sqrt{t}) \) \\
+\(\displaystyle F_Z(t) = F_X(\sqrt{t}) - F_X(-\sqrt{t}) \) \\
+\(\displaystyle (F_Z(t))' = (F_X(\sqrt{t}) - F_X(-\sqrt{t}))' \) \\
+\(\displaystyle f_Z(t) = f_X(\sqrt{t}) \cdot \frac{1}{2\sqrt{t}} + f_X(-\sqrt{t}) \cdot \frac{1}{2\sqrt{t}} = \frac{1}{2\sqrt{t}} \)
+\section{Problem 10\textdegree}
+Probability of success in k-th trial:
+\(P(X=k) = (1-p)^{k-1} p  \). \\
+Let's calculate the expected value: \\
+\(\displaystyle E(X) = \sum_{i=1}^{\infty} i(1-p)^{i-1}p = p \sum_{i=0}^\infty (i+1)(1-p)^i =
+p(-\sum_{i=0}^\infty (1-p)^{i+1})' = p((p-1)\frac{1}{1-(1-p)})' =  \) \\
+\(\displaystyle = p(\frac{p-1}{p})' = p(1-p^{-1})' = \frac{1}{p}  \) \\
+Similarly we can obtain: \\
+\(\displaystyle E(X^2) = \sum_{i=1}^{\infty} i^2(1-p)^{i-1}p = \frac{2-p}{p^2} \).\\
+\(\displaystyle E(X^2) = \sum_{i=1}^{\infty} i^2(1-p)^{i-1}p = p\sum_{i=0}^{\infty} (i+1)^2(1-p)^{i} = 
+p(-\sum_{i=0}^{\infty} (i+1)(1-p)^{i+1})' = \) \\
+\(\displaystyle = p\left((p-1)\sum_{i=0}^{\infty} (i+1)(1-p)^{i+1}\right)' = p\left((p-1) \left( -\sum_{i=0}^{\infty} (1-p)^{i}\right) '\right) ' = p\left((p-1) \left( \frac{p-1}{1-(1-p)}\right) '\right) ' =  \)\\
+\(\displaystyle = p\left((p-1) \left( 1 - \frac{1}{p} \right) '\right) ' =  
+p\left((p-1) \frac{1}{p^2} \right) ' = p\left(\frac{1}{p} - \frac{1}{p^2} \right) ' = 
+p\left(- \frac{1}{p^2} + \frac{2}{p^3} \right) = - \frac{1}{p} + \frac{2}{p^2} = \frac{2-p}{p^2} \) \\
+Now we can compute variance:\\
+\(\displaystyle V(X) = E(X^2) - (E(X))^2 = \frac{2-p}{p^2} - \frac{1}{p^2} = \frac{1-p}{p^2} \)\\
+
+
+
+\section{Problem 11\textdegree}
+The numer of elements of all sets is 142. Probability of taking an element of selected set is equal to cardinality of this set divided by numer of all elements. Hence:\\
+\begin{tabular}{c *{4}{|c}}
+X & 40 & 32 & 20 & 50 \\\hline
+P(X) & $\frac{40}{142}$  & $\frac{32}{142}$  & $\frac{20}{142}$ & $\frac{50}{142}$ 
+\end{tabular}\\
+We have 4 sets. Choosing random one from them gives us a $\frac{1}{4}$ chance to get the selected one. Hence: \\
+\begin{tabular}{c *{4}{|c}}
+Y & 40 & 32 & 20 & 50 \\\hline
+P(Y) & $\frac{1}{4}$  & $\frac{1}{4}$  & $\frac{1}{4}$ & $\frac{1}{4}$
+\end{tabular}\\
+Now we can compute the expected values: \\
+\(E(X) = 40 \cdot \frac{40}{142} + 32 \cdot \frac{32}{142} + 20 \cdot \frac{20}{142} + 50 \cdot \frac{50}{142} = \frac{5524}{142} = 38\frac{64}{71} \) \\
+\(E(Y) = 40 \cdot \frac{1}{4} + 32 \cdot \frac{1}{4} + 20 \cdot \frac{1}{4} + 50 \cdot \frac{1}{4} = \frac{142}{4} = 35.5 \)
+
+\end{document}

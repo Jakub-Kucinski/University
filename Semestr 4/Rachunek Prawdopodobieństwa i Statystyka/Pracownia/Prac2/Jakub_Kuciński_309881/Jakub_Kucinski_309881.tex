@@ -1,0 +1,71 @@
+\documentclass[a4paper,12pt] {article}
+\usepackage[polish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{tikz}
+
+\usepackage{geometry}
+
+\frenchspacing
+\newgeometry{tmargin=3cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+
+\title{Zadanie nr 2 zamiast kolokwium}
+\author{Jakub Kuciński 309881, grupa Pratik Ghosal}
+
+\begin {document}
+\maketitle
+\thispagestyle{empty}
+
+Analizę współczynnika korelacji przeprowadziłem dla Holandii oraz Szwecji. Dane ograniczyłem od dnia, od którego codziennie występowały nowe zachorowania w danym kraju. Dla Holandii był to 28. lutego, a dla Szwecji 27. lutego. Sprawdzałem jak zachowuje się maksymalny wskaźnik korelacji dla rozważanych danych przy dodatkowym ograniczeniu początku. Dodatkowo dodawałem ograniczenie co do minimalnej liczby dni użytej do obliczenia korelacji. Wyniki przedstawiam poniżej:\\\\
+\begin{tabular}{| l | c | c | c | c | c | c | c | c | c |}
+\hline
+L.p & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9\\ 
+\hline
+Min. liczba dni & 20 & 20 & 20 & 30 & 30 & 30 & 40 & 40 & 40\\
+\hline
+Min. początek dla Holandii & 0 & 9 & 13 & 0 & 9 & 13 & 0 & 9 & 13\\
+\hline
+Min. początek dla Szwecji & 0 & 9 & 14 & 0 & 9 & 14 & 0 & 9 & 14\\
+\hline
+Liczba dni & 20 & 20 & 21 & 30 & 36 & 32 & 47 & 41 & 40\\
+\hline
+Początek dla Holandii & 9 & 9 & 13 & 0 & 9 & 13 & 0 & 9 & 13\\
+\hline
+Początek dla Szwecji & 17 & 17 & 20 & 7 & 16 & 20 & 7 & 16 & 20\\
+\hline
+Maks. współczynnik korelacji & 0.964 & 0.964 & 0.921 & 0.953 & 0.913 & 0.885 & 0.936 & 0.901 & 0.862\\
+\hline
+\end{tabular}\\
+
+Minimalny początek i otrzymany początek oznaczają liczbę dni od pierwszego dnia branego pod uwagę przy naszej analizie dla danego państwa (0 odpowiada 28. lutego dla Holandii i 27. lutego dla Szwecji). 9 odzwierciedlają dni, w których pierwszy raz pojawiło się ponad 50 zachorowań w Holandii i Szwecji. Podobnie 13 i 14 odpowiadają dniom, w których pierwszy raz pojawiło się ponad 100 zachorowań. \\
+
+Wyniki w tabeli odzwierciedlają maksymalne wartości korelacji między zachorowaniami jedynie dla pewnych najlepszych wycinków danych. Jeśli jednak chcielibyśmy pominąć początkowe dni rozwoju choroby, których pomiary mogą być dosyć losowe lub niedokładne i policzyć korelację ze wszystkich następnych dni, aż do ostatniego dnia zawierającego dane jednego z państw, to dostaniemy następujące wyniki:\\\\
+\begin{tabular}{| l | c | c | c |}
+\hline
+L.p & 1 & 2 & 3 \\ 
+\hline
+Min. liczba dni & 20 & 20 & 20\\
+\hline
+Min. początek dla Holandii & 0 & 9 & 13 \\
+\hline
+Min. początek dla Szwecji & 0 & 9 & 14 \\
+\hline
+Liczba dni & 50 & 47 & 43\\
+\hline
+Początek dla Holandii & 0 & 9 & 13 \\
+\hline
+Początek dla Szwecji & 13 & 16 & 20\\
+\hline
+Maks. współczynnik korelacji & 0.907 & 0.861 & 0.819\\
+\hline
+\end{tabular}
+\pagebreak
+
+Na podstawie wyliczeń widzimy, że występuje silna korelacja między zachorowaniami w Holandii i Szwecji. Nawet dla dużych przedziałów czasowych (bo wynoszących aż 40 lub więcej dni dla danych wejściowych o zakresie 64 dni) współczynnik korelacji jest bardzo wysoki.
+
+
+\end {document}\grid

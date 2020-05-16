@@ -1,0 +1,20 @@
+# depslib dependency file v1.0
+1542147528 source:/home/kuba/Programowanie/Programowanie_w_C/Wielomiany/main.c
+	<stdio.h>
+	<stdlib.h>
+	"wymierne.h"
+	"wielomiany.h"
+
+1542147528 /home/kuba/Programowanie/Programowanie_w_C/Wielomiany/wymierne.h
+	<stdio.h>
+
+1542147528 source:/home/kuba/Programowanie/Programowanie_w_C/Wielomiany/wymierne.c
+	"wymierne.h"
+
+1542147528 source:/home/kuba/Programowanie/Programowanie_w_C/Wielomiany/wielomiany.c
+	"wielomiany.h"
+
+1542147528 /home/kuba/Programowanie/Programowanie_w_C/Wielomiany/wielomiany.h
+	<stdio.h>
+	"wymierne.h"
+

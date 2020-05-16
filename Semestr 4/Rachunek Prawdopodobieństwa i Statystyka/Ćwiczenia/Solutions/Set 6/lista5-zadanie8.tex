@@ -1,0 +1,86 @@
+\documentclass[a4paper,12pt] {article}
+\usepackage[polish, english]{babel}
+\usepackage{polski}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{amsfonts}
+\usepackage{geometry}
+\frenchspacing
+\newgeometry{tmargin=3cm, bmargin=2cm, lmargin=3cm, rmargin=3cm}
+
+\author{Ireneusz Gościński}
+\title{Solution of task No. 8}
+\date{\today}
+
+\begin {document}
+\maketitle
+\thispagestyle{empty}
+
+We have a function $f(x,y)=xy$ and area $[0,2]\times[0,1]$. Our task is to find distribution of $Z = X + Y$.\\\\
+At first, let's change the variables: $(X,Y)\mapsto(Z,T)$. Let $ Z = X + Y,~T = Y$. Inverse transformation: $ X = Z - T,~Y = T$.\\\\\\
+Determinant of Jacobian transformation:
+\(
+J=
+\left| \begin{array}{cc}
+\frac{\big{\partial x}}{\big{\partial z}} & \frac{\big{\partial x}}{\big{\partial t}}\\
+\\
+\frac{\big{\partial y}}{\big{\partial z}} & \frac{\big{\partial y}}{\big{\partial t}}
+\end{array} \right|
+=
+\left| \begin{array}{cc}
+1 & -1 \\
+\\
+0 & \;1 
+\end{array} \right|
+=1
+\)
+\\
+\\\\
+\(
+g(z, t) = f (x(z, t), y(z, t)) \times |J| = (z-t)t
+\)
+\\
+\\\\
+\(
+\left\{ \begin{array}{ll}
+0<x<2\\
+0<t<1
+\end{array} \right
+~\Rightarrow~
+\(
+\left\{ \begin{array}{ll}
+0<z-t<2\\
+0<t<1
+\end{array} \right
+~\Rightarrow~
+\(
+\left\{ \begin{array}{ll}
+z-2<t<z\\
+0<t<1
+\end{array} \right
+~~~~~~~~~~
+\begin{array}{ll}
+t \in [0,1]\\
+z \in [0,3]
+\end{array}
+\)
+\\
+\\\\
+\noindent
+Integration interval for $t$ is $[max \{0, z - 2\} , ~min \{1, z\}]$.\\
+For $z \in [0, 1] \rightarrow t \in [0, z]$, for $z ∈\in[1, 2] \rightarrow t \in [0, 1]$, for $z \in [2, 3] \rightarrow t \in [z - 2, 1]$.
+\\\\\\
+$\displaystyle \int g(z,t)~dt = \int (z-t)t~dt = \int zt-t^2~dt = z\frac{t^2}{2} - \frac{t^3}{3} + C$
+\\\\\\
+\(
+g(z)=
+\left\{ \begin{array}{cc}
+z\frac{t^2}{2} - \frac{t^3}{3} \Bigg|_{t=0}^z, & ~z \in [0,1]\\
+\\
+z\frac{t^2}{2} - \frac{t^3}{3} \Bigg|_{t=0}^1, & ~z \in [1,2]\\
+\\
+~~~z\frac{t^2}{2} - \frac{t^3}{3} \Bigg|_{t=z-2}^1, & ~z \in [2,3]
+\end{array} \right
+\)
+\end {document}\grid

@@ -1,0 +1,87 @@
+\documentclass[a4paper,12pt] {article}
+\usepackage[polish, english]{babel}
+\usepackage{polski}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{amsfonts}
+\usepackage{geometry}
+
+\usepackage{array}
+\usepackage{tikz}
+
+\usepackage{amsmath}
+
+\frenchspacing
+\newgeometry{tmargin=3cm, bmargin=2cm, lmargin=3cm, rmargin=3cm}
+
+\title{Zadanie nr 3 zamiast kolokwium}
+\author{Jakub Kuciński 309881, grupa Pratik Ghosal}
+
+\begin {document}
+\maketitle
+\thispagestyle{empty}
+
+Założenia: $X$ i $Y$ są niezależnymi zmiennymi losowymi oraz $X\sim N(0,1)$ \\ i $Y\sim\chi(n)$. Wtedy $T = \frac{X}{\sqrt{Y/n}}$ nazywamy rozkładem t-studenta z $n$ stopniami swobody. Wiemy, że gęstości zmiennych $X$ i $Y$ są określone wzorami: 
+\begin{align}
+\begin{split}
+ f_X(x) &= \frac{1}{\sqrt{2\pi}}exp\left(-\frac{x^2}{2}\right) \\
+ f_Y(y) &= \frac{(\frac{1}{2})^{n/2}}{\Gamma(n/2)}y^{k/2 - 1}exp\left(-\frac{y}{2}\right)
+\end{split}
+\end{align}
+Wtedy zmienna losowa $(X,Y)$ może zostać określona wzorem:
+\begin{equation}
+f_{(X,Y)} = \frac{1}{\sqrt{2\pi}}exp\left(-\frac{x^2}{2}\right) \cdot \frac{(\frac{1}{2})^{n/2}}{\Gamma(n/2)}y^{k/2 - 1}exp\left(-\frac{y}{2}\right)
+\end{equation}
+Wykonajmy zamianę zmiennych $(X,Y) \mapsto (T, W)$. Niech $W = Y$. Z rozkładów $X$~i~$Y$ mamy $x \in (-\infty, \infty)$, $y \in (0, \infty)$. Stąd $w \in (0, \infty)$. Wyznaczmy $x$~i~$y$ względem $t$~i~$w$.
+\begin{align}
+\begin{split}
+y &= w,\;\; x = t\sqrt{y/n} \;\;\Rightarrow \;\;x = t\sqrt{w/n}
+\end{split}
+\end{align}
+Policzmy Jakobian przekształcenia:
+$$
+\mathbf{J} 
+= 
+\begin{vmatrix}
+{\partial x \over \partial t} & {\partial x\over \partial w}  \\
+{\partial y \over \partial t} & {\partial y\over \partial w}
+\end{vmatrix}
+=
+\begin{vmatrix}
+\sqrt{\frac{w}{n}} & \frac{t}{2\sqrt{w\cdot n}} \\
+0 & 1 
+\end{vmatrix}
+=
+\sqrt{\frac{w}{n}}
+$$
+Możemy wykonać zamianę zmiennych:
+\begin{align}
+g(t,w) &= f(x(t,w), y(t,w)) \\ 
+	   &= \frac{1}{\sqrt{2 \pi}} \cdot \frac{1}{\Gamma (n/2) 2^{n/2}} \cdot w^{n/2 \;- 1} \cdot exp\left(-\frac{w}{2}\right) \cdot exp\left(-\frac{t^2w}{2n}\right) \\
+	   &= \frac{1}{\sqrt{2 \pi}} \cdot \frac{1}{\Gamma (n/2) 2^{n/2} \sqrt{n}} \cdot  w^{n/2 \;- 1/2} \cdot exp\left(-\frac{w}{2}(1+\frac{t^2}{n})\right)
+\end{align}
+Możemy teraz policzyć gęstość zmiennej $T$ wyznaczająć brzegową gęstość funkcji $g(t,w)$:
+\begin{align}
+g_T(t) &= \frac{1}{\sqrt{2 \pi}} \cdot \frac{1}{\Gamma (n/2) 2^{n/2} \sqrt{n}} \cdot \int_0^{\infty} w^{(n+1)/2 \;- 1} \cdot exp\left(-\frac{w}{2}(1+\frac{t^2}{n})\right) \mathop{dw}
+\end{align}
+Przyjmując oznaczenia
+\begin{align}
+\begin{split}
+b &= \frac{n+1}{2} - 1 \\
+p &= \frac{1}{2}\left(1+\frac{t^2}{n}\right)
+\end{split}
+\end{align}
+dostajemy:
+\begin{align}
+g_T(t) &= \frac{1}{\sqrt{2 \pi}} \cdot \frac{1}{\Gamma (n/2) 2^{n/2} \sqrt{n}} \cdot \int_0^{\infty} w^{p-1} \cdot e^{-bw} \mathop{dw} \\
+	   &= \frac{1}{\sqrt{2 \pi}} \cdot \frac{1}{\Gamma (n/2) 2^{n/2} \sqrt{n}} \cdot \frac{\Gamma (b)}{p^b} \cdot \int_0^{\infty} \frac{p^b}{\Gamma (b)} \cdot w^{p-1} \cdot e^{-bw} \mathop{dw}
+\end{align}
+Zauważmy, że wyrażenie pod całką jest gęstością rozkładu gamma z parametrami b i p. Skoro całka zawiera cały zakres określoności rozkładu gamma, to jej wartość wynosi 1. Stąd dostajemy wzór na gęstość rozkładu t-Studenta:
+\begin{align}
+g_T(t) &= \frac{1}{\sqrt{2 \pi}} \cdot \frac{1}{\Gamma (n/2)\; 2^{n/2}\; \sqrt{n}} \cdot \frac{\Gamma (b)}{p^b} \cdot 1 \\
+	   &= \frac{\Gamma (\frac{n+1}{2})}{\Gamma (\frac{n}{2})} \cdot \frac{1}{\left(\frac{1}{2}(1+\frac{t^2}{n})\right)^{(n+1)/2}} \cdot \frac{1}{\Gamma (n/2)\; 2^{n/2}\; \sqrt{n}} \\
+	   &= \frac{\Gamma (\frac{n+1}{2})}{\Gamma (\frac{n}{2})} \cdot \frac{1}{\sqrt{2\pi}\; \sqrt{n}} \cdot \frac{\sqrt{2}}{(1+\frac{t^2}{n})^{(n+1)/2}} \\
+	   &= \frac{\Gamma (\frac{n+1}{2})}{\sqrt{n\pi}\; \Gamma (\frac{n}{2})} \cdot \left(1+\frac{t^2}{n}\right)^{-(n+1)/2}
+\end{align}
+\end {document}\grid

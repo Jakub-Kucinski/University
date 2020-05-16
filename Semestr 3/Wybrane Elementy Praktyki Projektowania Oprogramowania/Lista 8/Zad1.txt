@@ -1,0 +1,30 @@
+CREATE DATABASE zad1;
+\c zad1;   <--- przełączenie się na bazę danych zad1
+
+a)
+
+CREATE TABLE OSOBA (imie VARCHAR(1000), nazwisko VARCHAR(1000), plec VARCHAR(100), wiek INTEGER);
+
+ALTER TABLE OSOBA ADD id INTEGER;
+
+CREATE SEQUENCE serial1  AS int START WITH 1  INCREMENT BY 1  MINVALUE -2147483648  MAXVALUE 2147483647 CACHE
+
+INSERT INTO OSOBA (id, imie, nazwisko, plec, wiek) VALUES (nextval('serial1'), 'Jacek', 'Kowalski', 'mezczyzna', 21);
+INSERT INTO OSOBA (id, imie, nazwisko, plec, wiek) VALUES (nextval('serial1'), 'Mateusz', 'Nowak', 'mezczyzna', 22);
+
+
+DROP TABLE OSOBA;
+
+b) CREATE TABLE OSOBA (imie VARCHAR(1000), nazwisko VARCHAR(1000), plec VARCHAR(100), wiek INTEGER);
+
+ALTER TABLE OSOBA ADD id SERIAL PRIMARY KEY;
+
+INSERT INTO OSOBA(imie, nazwisko, plec, wiek) VALUES ('Jacek', 'Kowalski', 'mezczyzna', 21);
+INSERT INTO OSOBA(imie, nazwisko, plec, wiek) VALUES ('Mateusz', 'Nowak', 'mezczyzna', 22);
+INSERT INTO OSOBA(imie, nazwisko, plec, wiek) VALUES ('Adam', 'Kucharczyk', 'mezczyzna', 26);
+INSERT INTO OSOBA(imie, nazwisko, plec, wiek) VALUES ('Agnieszka', 'Kubacka', 'kobieta', 22);
+
+SELECT * FROM OSOBA;
+SELECT * FROM OSOBA WHERE OSOBA.wiek >= 22;
+SELECT * FROM OSOBA WHERE OSOBA.plec LIKE 'mezczyzna';
+SELECT * FROM OSOBA WHERE OSOBA.nazwisko LIKE 'K%';

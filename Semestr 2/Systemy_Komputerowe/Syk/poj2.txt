@@ -1,0 +1,198 @@
+Jak czytać plik?
+- "//" - źródło wiedzy
+- "-" - rozwinięcie kropki
+- "●" - zagadnienia od wykładowcy
+- "+" - informacje pomagające w zrozumieniu, dodatkowe informacje
+- "*" - bonusy, pomagające przybliżyć terminy 
+- "?" - możliwy błąd w teksie
+- "??" - brak informacji
+
+1. Struktura systemów operacyjnych  //Stallings
+● systemy wsadowe - system który na stałe rezuduje w pamięci operacyjnej, po wykonaniu jednego zadania przekazuje dane wyjściowe do kolejnego, gdzie te dane to dane wejściowe. System ten wykonuje jedno zadanie, jedno po drugim bez przerwy, najszybciej jak to możliwe(nie ma wielozadaniowości), nie ma nadzoru użytkoania(w późniejszych wersiach dodano przerwania, pozwalające na monitorowanie pracy). Monitor kontroluje sekwencje zdarzń, a rezultat każdego zadania przekazuje do wyjścia(np. drukark).
+* System wsadowy - system obsługujący poprawne sekwencyjne wykonywanie programów // dysk
+● podstawowe funkcje jądra		//Tanebaum
++ jądro znajduje się bezpośrednio nad wartwą sprzętową
+- umożliwa interakcje z urządzeniami we/wy (za pomocą sterowników)
+- interakcja z jednostką zarządania pamięcią
+- kontroluje czas dostępu do procesora
+- zarządza pamięcią (ma pełny dostęp do pamięci so)
+- zajmuje się obsługą przerwań
+- synchronizacja  i komunikacja między procesami
+● przestrzeń użytkownika i jądra  //https://www.quora.com/What-are-the-functions-of-kernel
++ chodzi o pamięć RAM
++ jest to po to aby użytkownik czegoś nie popsuł
+- użytkownika - zestaw pamięci w kórej działają procesy użytkownika, nie ma dostępu do przestrzeni jądra(chyba że za pośrednictwem wywołań so)
+- jądra - fragment pamięci operacyjnej, na której wykonyać działania może jedynie jądro. Zarządza procesami w przestrzeni urzytkownika. Ma dostęp do całej pamięci
+
+*Bonus pomagający w zrozuminiu
+*{Think about the computer system as a house for a family where kernel space is the list of chores that the parents take resp/onsibility for and user being any of the children that the parents have.
+*
+*So, the children don’t interfere with what the parents do like paying the electricity bill etc but they do know that the parents will keep them in the best possible condition and they need not worry about a thing.
+*
+*What the children does, like their homeworks from school comes under user space that the children themselves had to do but the parents(kernel) supervises upon and parents also put up the curfew times like the kernel makes constraints for the available resources that a user can use to perform its job.}
+● mechanizm vs. polityka  //Ćwiczenia
++ polityka odnosi się do tego co trzeba zrobić, a mechanizm do tego jak to trzeba zrobić
+- polityka to zestaw reguł które należy przestrzegać
+- mechanizm praktyczna realizacja polityki 
+* Przykład z ćwiczeń
+*  Otwieranie drzwi kartą:
+*  Polityka – karta z odpowiednim kodem może otworzyć drzwi.
+*  Mechanizm - zdefiniowane kody otwierają drzwi.
+*  • mechanizm w tym przykładzie nie narzuca polityki, nie definiuje, kto i kiedy ma wchodzić
+*  • łatwa zmiana polityki (wprowadzenie nowych polityk – grupy, klasy dostępu), wymaga zmiany parametrów mechanizmu
+● implementacja wywołań systemowych
+??
+??
+??
+● jądro monolityczne //Stallings
+- Duże jądro zawierające praktyczne kompletny so, wraz z usługami sterowania, systemem plików, sterownikami urządzeń oraz zarządzaniem pamięcą. Wszystkie funkcjonalne składniki jądra mają dostęp do wszystkich swoich wewnętrzych struktur danych oraz procedur. Zazwyczaj, jądro monolityczne jest wdrażane pod postacią jednego procesu, w którym wszystkie elementy korzystają z tej samej przestrzeni adresowej.
+● struktura warstwowa //http://www.issi.uz.zgora.pl/pl/didactic/kp/so/wyk2.pdf
++ W ogólnym mogel so
++ Powłoka - interfejs użytkownika (komunikacja z użytkownikime)
++ Jądro so realizujące jego funkcje (zarządzanie plikami, uruchamianie aplikacji)
++ Warstwa odpowiedzialna za współprace ze sprzętem (zarządzanie zasobami maszyny)
+- so dzieli się na warsty
+- poziom najniższy to 0 (sprzętowy), a najwyższy to n (ostatnia warstwa, zazwyczaj interfejs z użytkownikiem)
+- każda z warstw korzysta z usług warstw niższych
+- po uruchomieniu warstwy można przystąpić do realizacji kolejnej
+- główna wada to trudność w zdefiniowaniu poszczególych warstw
+- główna zaleta to łatwość w lokalizacji błędów i weryfikacji systemu
+* Warstwy każdego so (w ogólnym modelu)
+*|------------------------------------------------------|
+*| 2 | Warstwa komunikacji z użytkowniem                |
+*|------------------------------------------------------|
+*| 1 | Jądro so                                         |
+*|------------------------------------------------------|
+*| 0 | Warstwa współpracy ze sprzętem                   |
+*|------------------------------------------------------|
+*
+* Przykładowy system wartowy
+*--------------------------------------------------------
+*| 6 | Programy użytkowe                                |
+*|------------------------------------------------------|
+*| 5 | Programy obsługi i planowania przydziału urządeń |
+*|------------------------------------------------------|
+*| 4 | Pamięć wirtualna                                 |
+*|------------------------------------------------------|
+*| 3 | Kanał we/wy                                      |
+*|------------------------------------------------------|
+*| 2 | Planowanie przydziału procesora                  |
+*|------------------------------------------------------|
+*| 1 | Interpreter poleceń                              |
+*|------------------------------------------------------|
+*| 0 | Szprzęt                                          |
+*|------------------------------------------------------|
+● moduły jądra i sterowniki
+??
+??
+??
+● mikrojądro i procesy usługowe //Stalling, Tanenbaum
+- Niewielki uprzywilejowany rdzeń so, który zapewnia usługi szeregowania procesów, zarządzania pamięcią oraz usługi komunikacyjne. Mikrojądro jest zależne od innych procesów realizujących niektóre z funkcji tradycyjnie skojarzonych z jądrem so.
+- Mikrojądo ma na celu stworzenie jednego procesu który pracuje w trybie jądra, natomiast inne moduły działają jako zwykłe procesu urzytkownika. Dzieki temu podczas awari jednego procesu nie wystpie się całę so, tylko w przypadku np awarii sterownika dźwięku to dźwięk zaniknie
+? - Procesy użytkowe to te które działają jako zwykłe procesy użytkownika
+● wywoływanie procedur vs. przekazywanie komunikatów //Tanenbaum
+- Kiedy proces działający na komputrze nr1 wywoła procedure na komputerze nr2, proces na komputerze nr1 jest zawieszany, a uruchomienie procedury następuje na komputerze nr2. Techanika ta to RPC(Remote Procedur Call). Ideą RPC jest aby zdalne wywoładnie byo możliwie podobne do lokalnego. Krok1: klijent wywołuje procedure pośredniczą. Krok2: Procedura pośrednicza pakuje parametry do komunikatu i realizue wywołanie. Krok3: Przesłanie komunikatu z komputer-kient na komputer-server. Krok4: Jądro przekazuje wchodzące pakiety do procedury pośredniczej serwera. Krok5: procedura pośrednicząca serwera wywołuje procedure serwera. Odpowiedź jest przesyłana taką samą drogą, ale w odwrotnym kierunku
+- przekazywanie komunikatów to metoda komunikacji między procesmi w której wykorzystywane są dwa prymitywy: send i receive. Są one wywołaniami systemowymi a nie konstrukją języka. Pierwsza wysyła a druga procedura odbiera komunikaty. W przypadku zablokowania komunikatu pokazuje się błąd lub następuje zawieszenie do czasu nadejśia następnego komunikatu. Na tej zasadzie działają skrzynki pocztowe.
+● warstwa abstrakcji sprzętu  //Stallings
+- (Hardweare Abstraction Layer) Realizuje odwzoroania pomiędzy ogólnymi poleceniami sprzętowymi oraz odpowiedziami na nie, jak również poleceniami specyficznymi dla danej platformy. Warstwa abstrakcji izoluje so od zróżnicowyanych rozwiązań sprzętowych stosowanych w danej platfornie. Zdaniem warsry abstrakcji sprzętowej jest maskoawnaie różnic sprżetowych w komputerze
+● jądro hybrydowe  //https://pl.wikipedia.org/wiki/J%C4%85dro_hybrydowe
+- jądro systemu operacyjnego oparte na zmodyfikowanych architekturach jądra monolitycznego oraz mikrojądra używanych w systemach operacyjnych.
+- jądro jest strukturą podobną do mikrojądra, ale zaimplementowaną jak jądro monolityczne. W przeciwieństwie do mikrojądra, wszystkie (lub prawie wszystkie) usługi wykonywane są w przestrzeni jądra. Podobnie jak w jądrze monolitycznym, nie ma strat w wydajności wywołanych przepływem komunikatów mikrojądra i przełączaniem kontekstu między przestrzenią użytkownika a jądra. Jednakże, podobnie jak w jądrach monolitycznych, nie ma korzyści wynikających z umieszczenia usług w przestrzeni użytkownika.
+2. Procesy
+● przestrzeń adresowa procesu //http://students.mimuw.edu.pl/SR/prace-mgr/blaszczyk/node104.html
+- zbiór adresów logicznych za pomocą których proces odwołuje się do pamięci operacyjnej komputera. Każdy proces może działać w dwóch trybach. W trybie użytkownika proces wykonuje kod programu użytkownika, w tryie jądra - kod jądra. W trybie jądra ma dostęp do wszystkich zasobów, natomiast w trybie użytkownika tlko te które zostaną przyznane przez so. Proses działający w trybie urzytkownika nie ma dostępu do struktur jądra, zatem przesteń adresowa użytkownika różni się od przestrzeni adresowej w trybie jądra.
+- Procesy nie mogą zakłócać swojego działania, z tego powodu ich adresy są rozłączne. Uzyskuje się to dzięki pamięci wirtualnej, adres wirtualny dla każdego procesu tłumaczony jest na adres fizyczny w pamięci operacyjnej, przy czym każdy proces ma zswoje adresy fizyczne. W Linuchu każdy proces użytkownika ma inną przesteń adresową, natomist w trybie jądra jest taka sama dla wszystkich procesów.
+-Rozmiar przestrzeni adresowej jest zwykle dużo większy niż rozmiar pamięci operacyjnej, przez co nie wszystkie adresy wirtualne są prawidłowe. Prawidłowe adresy wirtualne należą do tzw. obszarów pamięci procesu. Prawidłowość adresu wirtualnego w trybie użytkownika jest sprawdzana sprzętowo.
+● zasoby procesu i PCB  //Stallings //http://www.ujk.edu.pl/ifiz/pl/files/lectures/Systemy_operacyjne/  //http://wazniak.mimuw.edu.pl/images/6/6f/  //https://pl.wikipedia.org/wiki/Blok_kontrolny_procesu
+- zasobem jest element sprzętowy lub programowy systemu komputerowego, którego brak może potencjalnie zablokować wykonywanie programu
+- blok kontrolny procesu(PCB) jest zarządzany oraz tworzny przez so. Jedną z ważniejszych informacji na temat bloku jest to że zawiera on informacje, by przerwać uruchomiony proces oraz wnowić go tak jakby przerwanie nie miało miejsca. Jest to kluczone narzędzie do obsługi wielu procesów. 
++ proces składa się z kodu programu oraz skojarzonych z nim danych wraz z PCB. W przypadku komputera z jednym procesorem tylko jeden proces może być w danej chwili wykonywany
+* Uproszczony blok kontrolny procesu
+*-------------------------------------------------------------------|
+*| Identyfikator - dzięki niemu można odróżnić od innych procesów   |
+*|------------------------------------------------------------------|
+*| Stan - stan prcesu                                               |
+*|------------------------------------------------------------------|
+*| Piorytet 														|
+*|------------------------------------------------------------------|
+*| Licznik progrmau - adres kolejnego rozkazu, który ma być wykonay |
+*|------------------------------------------------------------------|
+*| Wskaźnik pamięci - zawiera wskźnik do kodu programu oraz danych skojarzonych z tym procesem |
+*|------------------------------------------------------------------|
+*| Dane kontekstowe - dane które są w rejestrach podczas wykonywania procesu|
+*|------------------------------------------------------------------|
+*| Informacje na temat stanu we/wy                                  |
+*|------------------------------------------------------------------|
+*| Informacje ewidencyjne - dane o czasie, ograniczeniach, itp      |
+*|------------------------------------------------------------------|
+* Sop_02_wyk_1.0.pdfSystemy%20operacyjne%20-%20wyklad%202.pdf
+● stan procesu i przejścia między stanami   //Stallings
+- Uruchomiony - proces jest aktualnie wykonywany, w komputerze z jednym procesorem tylo jeden może być w tej postaci
+- Gotowy -proces przygotowany do wykonania
+- Zablokowany - Proces nie może być wykonany do chwili pojawienia się zdarzenia takiego jak np zakończenie operacji we/wy
+- Nowy - Proces został utworzony ale nie został jeszcze przyjęty do grupy procesów oczekujących na wykonaie. Zazwyczaj nie załadowany jeszcze do pamięci operacyjej, ale jego blok ostał utworzony
+- Anulowany - Proces który został przeniesiony z puli procesów oczekujących na wywołanie
+- PRZEJŚCIA
+- ∅ → Nowy - nowy proces jest stworzony
+- Nowy → Gotowy - zmienia gdy so jest gotowy do przyjęcia kolejnego procesu, w so jest ograniczenie liczby prosesów aby działał płynnie
+- Gotowy → Uruchomiony - kiedy nadchodzi pora uruchomienia procesu so wybiera jeden z procesów w gotowości. Wybiera to system przydzielający
+- Uruchomiony → Anulowny - akutalny proces ulega zakończeinu jeźli sygnalizuje zakończenie działania lub został przerwany z uwagi na błąd
+- Uruchoniony → Gotowy - zazwyczaj gdzy proces przekroczył maksymalny czas wykonania
+- Uruchomiony → Zablokowany - np gdy proces czeka na coś z we/wy lub gdy so nie może zapewnić tego co chce proces np oczekiwanie na dane, oczekiwanie na komunikat od innego procesu
+- Zablokowany → Gotowy - gdy nastąpi zdarzenie na które proces czekał
+● górna i dolna połówka   //Kolega
+- Górna połowa – zwykła procedura obsługi przerwań; przebiega z wyłączonymi rekurencyjnymi przerwaniami (może być przerwana tylko przez przerwania o wyższym priorytecie, a przerwania o ≤ priorytecie są zablokowane).
+- Dolna połowa – procedura przebiega z włączonymi wszystkimi przerwaniami i jest nadzorowana przez miniaturowego planistę, który zapewnia, że dolne połowy nigdy nie przerywają się wzajemnie.
++ Ta architektura jest uzupełniana przez mechanizm wyłączania wybranych dolnych połów podczas wykonywania zwykłego, pierwszoplanowego kodu jądra. 
+● przełączanie kontekstu, trybu pracy procesora i przestrzeni adresowych
+- Przełączanie kontektu - proces zachowywania i 
+??
+??
+● sygnały i ich obsługa  //http://jedrzej.ulasiewicz.staff.iiar.pwr.wroc.pl/ProgramowanieWspolbiezne/wyklad/SSO-Sygna%B3y12.pdf
+- sygnał - mechanizm asynchronicznego powiadomienia procesów o zdarzeniach(często awaryjnych)
+- Sygnały mogą być generowane przez: So(np gdy jest błąd), użytkownika(przez konsole), z programu aplikacyjnego przez funkcje oraz timery
+- Proces po otrzymiau sygnalu może: Obsłużyć sygnał, zablokować sygnał(odłożyć na później), zignorować sygnał, zakończyć się po otrzymaiu sygnału {UWAGA: niektórych sygnałów nie można ignorować}
+- Gdy proces jest zablokowany to po odblokwaniu dopiero sygnał "dochodzi" do procesu, sygnały takie gromadzą sie w masce
+● sen płytki i głęboki
+??
+??
+??
+● tworzenie procesów i kończenie ich działania
+
+● hierarchia procesów
+● tożsamość i uprawnienia procesów
+● śledzenie wykonania procesów
+3. Wątki
+● wykonywanie współbieżne a równoległe
+● modele programowania współbieżnego: maszyny stanów, współprogramy, wątki
+● motywacja stojąca za używaniem wątków
+● problemy w programowaniu z użyciem wątków
+● zasoby wątku a procesu
+● porównanie wątków przestrzeni jądra i przestrzeni użytkownika
+● procedury wielobieżne i wątkowo bezpieczne
+● aktywacje planisty
+● lokalna przestrzeń wątków (ang. thread local storage)
+● problemy z wątkami w systemach uniksowych
+4.Współbieżność i synchronizacja
+● sytuacja wyścigu, zagłodzenie, uwięzienie, zakleszczenie
+● wpływ ziarnistości blokad na wydajność programów
+● problemy z blokadami
+● problem sekcji krytycznej
+● graf przydziału zasobów
+● problem odwrócenia priorytetów i jego rozwiązanie
+● muteksy zwykłe i rekurencyjne
+● semafory zliczające
+● blokady wirujące
+● blokady adaptacyjne
+● zmienne warunkowe
+● bariery synchronizacyjne
+5. Komunikacja
+● pamięć dzielona
+● przekazywanie komunikatów
+● semantyka operacji wysyłania i odbierania komunikatów
+● właściwości oraz ograniczenia potoków i gniazd
+● protokoły połączeniowe i bezpołączeniowe
+● komunikacja strumieniowa i wymiana datagramów
+● gniazda domeny uniksowej i komunikaty pomocnicze
+● unikanie kopiowania
+● skrzynki pocztowe

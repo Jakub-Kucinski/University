@@ -1,0 +1,38 @@
+#include <stdio.h>
+
+/*Jakub Kuciński, numer indeksu: 309881, "Lista zadań na pierwsze zajęcia" zadanie 3., data: 03.10.2018, grupa: środa 10-12"*/
+
+/* Wartości jakiej funkcji oblicza poniższy program?
+ *      Autor: Marek Piotrów, Data: 1.10.2018
+ */
+
+int main(void)
+{
+    int n = 0;
+    float x = 0.0, dx = 10.0, eps = 1e-6;
+    float y1, y2;
+
+    while (n <= 0 || x <= 0.0)
+    {
+        printf(u8"Podaj dwie liczby dodatnie: naturalną i rzeczywistą:\n");
+        scanf("%d %f", &n, &x);
+        printf("Podaj dwie liczby dodatnie: epsilon i dx\n");
+        scanf("%f %f", &eps, &dx);
+    }
+
+    printf("Argument funkcji x  Wartość funkcji pierwiastek z x\n");
+    for (int i = 0; i < n; i++)
+    {
+        y1 = x;
+        y2 = y1 / 2;
+        while (y1 - y2 > eps || y2 - y1 > eps)
+        {
+            y1 = y2;
+            y2 = (y1 + x / y1) / 2;
+        }
+        printf("x = %.8f, f(x) = %.8f\n", x, y2);
+        x += dx;
+    }
+    return 0;
+}
+

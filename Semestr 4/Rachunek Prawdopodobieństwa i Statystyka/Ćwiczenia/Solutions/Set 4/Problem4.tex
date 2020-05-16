@@ -1,0 +1,63 @@
+\documentclass[11pt,wide]{article}
+
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx} 
+
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{verbatim}
+\usepackage{xcolor}
+
+\usepackage{hyperref}
+\usepackage{ textcomp }
+
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=green,
+    pdftitle={Sharelatex Example},
+    bookmarks=true,
+}
+
+\newcommand\numeq[1]%
+  {\stackrel{\scriptscriptstyle \mkern-1.5mu#1\mkern-1.5mu }{=}}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+\newtheorem{rysunek}{Rysunek}
+
+% Marginesy
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\title{Problem 4\textdegree}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty} 
+
+Proof that \(\displaystyle \Gamma\left(\frac{1}{2}\right) = \sqrt{\pi}\). \\
+\begin{center}
+\(\displaystyle \Gamma\left(\frac{1}{2}\right) = \int_0^{\infty} t^{-\frac{1}{2}}e^{-t}\mathop{dt} = \int_0^{\infty} \frac{1}{\sqrt{t}}e^{-t} \mathop{dt} = \bigg| t=\frac{x^2}{2}, \mathop{dt} = x\mathop{dx} \bigg| = \int_0^{\infty} \frac{\sqrt{2}}{x} e^{-x^2/2} x \mathop{dx} = \sqrt{2} \int_0^{\infty} e^{-x^2/2} \mathop{dx} = \sqrt{2} \cdot \frac{1}{2} \cdot \sqrt{2\pi}= \sqrt{\pi}\) \\
+\end{center}
+
+Equation \(\displaystyle \int_0^{\infty} e^{-x^2/2} \mathop{dx} = \frac{1}{2} \cdot \sqrt{2\pi} \) holds as from 1.6 we know \(\displaystyle \int_{-\infty}^{\infty} e^{-x^2/2} \mathop{dx} = \sqrt{2\pi} \) \\
+and from evenness of \(\displaystyle e^{-x^2/2} \) we have \(\displaystyle \int_{-\infty}^{\infty} e^{-x^2/2}\mathop{dx} = 2 \int_0^{\infty} e^{-x^2/2} \mathop{dx} \).
+
+\end{document}

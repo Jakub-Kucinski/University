@@ -1,0 +1,83 @@
+\documentclass[a4paper,12pt] {article}
+\usepackage[polish, english]{babel}
+\usepackage{polski}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{amsfonts}
+\usepackage{geometry}
+
+\usepackage{array}
+\usepackage{tikz}
+
+\frenchspacing
+\newgeometry{tmargin=3cm, bmargin=2cm, lmargin=3cm, rmargin=3cm}
+
+\title{Task No. 9}
+
+\begin {document}
+\maketitle
+\thispagestyle{empty}
+
+From task we have \( f(x,y) = \frac{15}{2}x^2y \), \(T = X/Y\) and the area shown below:\\
+
+\begin{tikzpicture}
+  \draw (0,0)node[below left]{(0,0)} -- 
+  ++(0,3)node[above left]{(2,0)} --
+  ++(1.5,-3)node[below right]{(0,1)} -- cycle;
+  \draw ;
+\end{tikzpicture}\\
+We want to change variables: $(X,Y)\mapsto(U,T)$. \\
+\(T = X/Y\). Let \(U = X\). \\
+Inverse transformation: \( X = U\), \(Y = U/T \). \\
+
+To make substitution of variables we need to compute the Jacobian:\\
+$$
+J =   
+\left\vert\matrix{{\big{\partial x} \over \big{\partial u}} & {\big{\partial x} \over \big{\partial t}}  \cr 
+{\big{\partial y} \over \big{\partial u}} & {\big{\partial y} \over \big{\partial t}}}\right\vert =
+\left\vert\matrix{{1} & {0} \cr
+{\big{1} \over \big{t}} & {\big{-u} \over \big{t^2}} }\right\vert = 
+-\frac{u}{t^2}
+$$\\
+
+As \(x\in [0,1]\), \(y\in [0, -2x+2]\) and \(T = X/Y\) then \(t\in [0, \infty]\). Let's find the range of \(U\).\\
+
+\(
+\left\{ \begin{array}{ll}
+0<x<1\\
+0<y<-2x+2
+\end{array} \right
+~\Rightarrow~
+\(
+\left\{ \begin{array}{ll}
+0<u<1\\
+0<\frac{u}{t}<-2u+2
+\end{array} \right
+~\Rightarrow~
+\(
+\left\{ \begin{array}{ll}
+0<u<1\\
+0<u<\frac{2t}{1+2t}
+\end{array} \right
+~\Rightarrow~
+\(
+\left\{ \begin{array}{ll}
+0<u<1\\
+0<u<1-\frac{1}{1+2t}
+\end{array} \right~
+\end{array}
+\)
+
+From equations above and \(t\in [0, \infty]\) we get \(\displaystyle u\in (0,\; 1 - \frac{1}{1+2t})\).\\
+
+Now we can change variables: \\
+\(\displaystyle g(u, t) = f(x(u,t),\; y(u, t)) \cdot \vert J \vert = \frac{15}{2} u^2 \cdot \frac{u}{t} \cdot \left\vert-\frac{u}{t^2}\right\vert = \frac{15}{2} \cdot \frac{u^4}{t^3} \)\\
+Last equation holds because both $t$ and $u$ are non-negative. \\
+We see that density of \(T\) is one of marginal densities of \(g(u, t)\) so all we need to do is to compute it: \\
+\(\displaystyle g_2(t) = \int_0^{1-\frac{1}{1+2t}} g(u, t) \mathop{du} = 
+\int_0^{1-\frac{1}{1+2t}} \frac{15}{2}\cdot \frac{u^4}{t^3} = \frac{3}{2} \cdot \frac{u^5}{t^3} \Bigg|_0^{1-\frac{1}{1+2t}} = \frac{3}{2} \cdot \frac{(1-\frac{1}{1+2t})^5}{t^3} \)
+
+
+
+\end {document}\grid

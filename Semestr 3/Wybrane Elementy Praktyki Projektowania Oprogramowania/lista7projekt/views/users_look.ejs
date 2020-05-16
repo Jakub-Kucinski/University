@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EkoWarzywko - klienci</title>
+    <link rel="stylesheet" type="text/css" href="styles/my_styles.css">
+</head>
+
+<body>
+    <div style="display: inline;">Jesteś zalogowany jako administrator: <%= admin %></div>
+    <div style=" display: inline;">
+        <a href="/">Wyloguj się</a>
+    </div>
+    <div>
+        <a href="/admin" style="display: inline;">
+            Powrót na stronę główną panelu administratora
+        </a>
+    </div>
+
+    <div style=" left: 550px;">
+        <h1>EkoWarzywko</h1>
+    </div>
+    <div style="left: 550px;">
+        <p>Złożone zamówienia klientów </p>
+    </div>
+    <ul>
+        <% users.forEach(function(user){ %>
+        <div class="orders">
+            <div>
+                <div>
+                    Nazwa użytkownika: <%= user.usrname %>
+                </div>
+                <div>Imię: <%= user.name %></div>
+                <div>Nazwisko: <%= user.surname %></div>
+                <div>E-mail: <%= user.email %></div>
+            </div>
+        </div>
+        <% })%>
+    </ul>
+
+
+</body>
+
+</html>

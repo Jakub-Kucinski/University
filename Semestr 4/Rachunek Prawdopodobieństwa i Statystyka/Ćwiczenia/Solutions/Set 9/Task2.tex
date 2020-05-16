@@ -1,0 +1,37 @@
+\documentclass[a4paper,12pt] {article}
+\usepackage[polish, english]{babel}
+\usepackage{polski}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{amsfonts}
+\usepackage{geometry}
+
+\usepackage{array}
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\frenchspacing
+\newgeometry{tmargin=3cm, bmargin=2cm, lmargin=3cm, rmargin=3cm}
+
+\title{Task 2}
+
+\begin {document}
+\maketitle
+\thispagestyle{empty}
+\begin{equation*}
+y_{k+1} = y_k + x_{k+1} \land y_k \geq 0 \land x_{k+1} \in [0, \infty)\; \Rightarrow \; y_k \in [0, y_{k+1}]
+\end{equation*}
+
+\begin{align*}
+ f_{Y_n}(y_n) &= \int_0^{y_n} \int_0^{y_{n-1}} \dots \int_0^{y_2} \lambda^n e^{-\lambda y_n} \mathop{dy_1}\mathop{dy_2} \dots \mathop{dy_{n-1}} = \\
+ 			  &= \lambda^n e^{-\lambda y_n} \int_0^{y_n} \int_0^{y_{n-1}} \dots \int_0^{y_2} 1 \mathop{dy_1}\mathop{dy_2} \dots \mathop{dy_{n-1}} = \\
+ 			  &= \lambda^n e^{-\lambda y_n} \int_0^{y_n} \int_0^{y_{n-1}} \dots \int_0^{y_3} y_2\mathop{dy_2} \dots \mathop{dy_{n-1}} = \\
+ 			  &= \lambda^n e^{-\lambda y_n} \int_0^{y_n} \int_0^{y_{n-1}} \dots \int_0^{y_4} \frac{y_3^2}{2}\mathop{dy_3} \dots \mathop{dy_{n-1}} = \\
+ 			  &= \lambda^n e^{-\lambda y_n} \int_0^{y_n} \int_0^{y_{n-1}} \dots \int_0^{y_5} \frac{y_4^3}{3!}\mathop{dy_4} \dots \mathop{dy_{n-1}} = \\
+ 			  &= \ldots = \lambda^n e^{-\lambda y_n} \int_0^{y_n} \frac{y_{n-1}^{n-2}}{(n-2)!} \mathop{dy_{n-1}} = \\
+ 			  &= \lambda^n e^{-\lambda y_n} \frac{y_{n-1}^{n-1}}{(n-1)!} \Big|_0^{y_n} = \lambda^n e^{-\lambda y_n} \frac{y_{n}^{n-1}}{(n-1)!} 
+\end{align*}
+
+
+\end {document}\grid

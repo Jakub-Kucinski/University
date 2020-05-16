@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1546127704 source:/home/kuba-ubuntu-18-04/Documents/Programing/Programowanie_w_C/bubbleshooter/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<ctype.h>
+	<float.h>
+
