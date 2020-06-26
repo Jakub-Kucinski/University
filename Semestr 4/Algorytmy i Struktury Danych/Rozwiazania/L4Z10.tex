@@ -1,0 +1,132 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} 
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{amsthm}
+ 
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+
+\newenvironment{rozw}{\paragraph{Rozwiązanie:}}{\hfill}
+
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.6in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+
+\title{Zadanie 10 lista 4}
+\author{Jakub Kuciński, prowadzący Szymon Dudycz}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Idea rozwiązania}
+Oznaczmy kolejne wierzchołki wejściowego wielokąta wypukłego $W_{1,n}$ jako $A_i = (x_i, y_i)$. Niech\\ 
+$T[i][j]$ - możliwie najmniejsza długość najdłuższej przekątnej w triangulacji wielokąta $W_{i, j}$ składającego się z wierzchołków $A_i, \ldots, A_j$ (oczywiście taki wielokąt też jest wypukły).\\
+Zastosujemy programowanie dynamiczne. Rozważmy krawędź $(A_i, A_j)$. Wiemy, że w triangulacji wielokąta $W_{i, j}$ krawędź $(A_i, A_j)$ musi być bokiem pewnego trójkąta. Wiemy, że wierzchołki $A_i, A_j$ są wierzchołkami tego trójkąta, zatem trzeci wierzchołek $A_k \in \{A_{i+1}, \ldots, A_{j-1}\}$. Wybranie pewnego wierzchołka $A_k$ dla naszego trójkąta dzieli nam wielokąt $W_{i, j}$ na mniejsze wielokąty $W_{i, k}$ i $W_{k, j}$, których minimalną triangulację już znamy. Zatem dla danych $i$ oraz $j$ szukamy takiego $k$, że największa spośród wartości $T[i][k]$, $T[k][j]$, $d(A_i, A_k)$, $d(A_k, A_j)$ jest możliwie najmniejsza. Możemy zatem zapisać zależność na wartości tabeli $T$:\\
+$$
+T[i][j] =
+\begin{cases}
+    0, \ & \text{jeśli } j\leq i+2 \\
+    \displaystyle \min_{k\in \{i+1, \ldots, j-1\}} (\max(T[i][k], T[k][j], d(A_i, A_k), d(A_k, A_j))), & \text{w przeciwnym wypadku }
+\end{cases}
+$$
+Naszym wynikiem będzie oczywiście wartość w elemencie $T[1][n]$, bo odpowiada ona całemu wejściowemu wielokątowi. Rozważamy wartości $T[i][j]$ tylko dla $i\leq j$. Przyjmujemy również, że odległość $d$ sąsiednich wierzchołków jest równa 0 - jest to potrzebne dla przypadku, gdy jako 3. wierzchołek trójkąta rozważamy wierzchołek będący sąsiadem $A_i$ lub $A_j$, bo wówczas powstaje tylko jedna przekątna.
+\section{Algorytm}
+Zmienna $i$ w algorytmie odpowiada początkowi rozważanego wielokąta, wartość $p+1$ odpowiada liczbie jego wierzchołków, a zmienna $k$ numerowi wierzchołka, który rozważamy jako trzeci wierzchołek trójkąta o boku $(A_i, A_{i+p})$. W tablicy $Trace$ zapamiętujemy numer trzeciego wierzchołka $k$ dla którego otrzymaliśmy najmniejszą triangulację dla danego wielokąta. Przechodzimy rosnąco po liczbie wierzchołków wielokątów, bo w zależności elementów $T$ widzimy, że wartość $T$ dla danego wielokąta zależy tylko od wartości $T$ dla mniejszych wielokątów. \pagebreak
+\begin{algorithm}
+\caption{$Minimalna\_triangulacja$}
+\begin{algorithmic}[1]
+\For{$i = 1, \ldots, n$}
+    \For{$p = 0, 1, 2$}
+        \If{$i+p\leq n$}
+            \State $T[i][i+p] = 0$
+        \EndIf 
+    \EndFor
+\EndFor
+\For{$p = 3, \ldots, n$}
+    \For{$i = 1, \ldots, n$}
+        \If{$i+p\leq n$}
+            \State $min\_length = \infty$
+            \For{$k = i+1, \ldots, i+p-1$}
+                \If{$\max(T[i][k], T[k][i+p], d(A_i, A_k), d(A_k, A_{i+p}))<min\_length$}
+                    \State $Trace[i][j] = k$
+                    \State $min\_length = \max(T[i][k], T[k][i+p], d(A_i, A_k), d(A_k, A_{i+p}))$
+                \EndIf
+            \EndFor
+            \State $T[i][i+p] = min\_length$
+        \Else
+            \State break
+        \EndIf
+    \EndFor
+\EndFor
+\State \Return $T[1][n]$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{$Zbior\_przekatnych(i, j)$}
+\begin{algorithmic}[1]
+    \If{$j\leq i + 2$}
+        \State \Return $\emptyset$
+    \EndIf
+    \If{$Trace[i][j] == i+1$}
+        \State  \Return $(i+1, j) \cup Zbior\_przekatnych(i+1, j)$
+    \EndIf
+    \If{$Trace[i][j] == j-1$}
+        \State  \Return $(i, j-1) \cup Zbior\_przekatnych(i, j-1)$
+    \EndIf
+    \State $k = Trace[i][j]$
+    \State \Return $(i, k) \cup (k, j) \cup Zbior\_przekatnych(i, k) \cup Zbior\_przekatnych(k, j)$
+\end{algorithmic}
+\end{algorithm}
+
+Do odtworzenia zbioru przekątnych w minimalnej triangulacji wystarczy wywołać drugą funkcję na parametrach 1 oraz n. 
+
+\section{Złożoność obliczeniowa i pamięciowa}
+\subsection{Złożoność pamięciowa}
+Potrzebna pamięć jest tego samego rzędu co rozmiar tabeli $T$ oraz $Trace$, czyli $\mathcal{O}(n^2)$. Zbiór przekątnych najmniejszej triangulacji wymaga $\mathcal{O}(n)$ pamięci, bo dla n-kąta dowolna triangulacja składa się z $n-3$ przekątnych.
+
+\subsection{Złożoność obliczeniowa}
+Uzupełnianie odpowiednich elementów $T$ zerami wykonuje się w czasie $\mathcal{O}(n)$. Dominująca będzie druga "większa" pętla. \\
+Warunki w środku pętli wymagają stałej liczby operacji. Zatem liczba wykonanych operacji będzie wprost proporcjonalna do liczby obrotów wszystkich pętli. Wewnętrzna pętla wykonuje się $p-2$ razy. Środkowa $n-p+1$. Możemy zatem zapiać, że łączna liczba obrotów pętli wynosi:\\
+$\sum_{p=3}^n (n-p+1)(p-2) = \frac{1}{6} n (n^2 - 3 n + 2) = \mathcal{O}(n^3)$\\
+Rozważmy złożoność odtwarzania przekątnych w minimalnej triangulacji. Mamy jeden przypadek, który nie dodaje żadnej przekątnej i nie wywołuje rekurencyjnie tej samej procedury oraz 3 przypadki, w których powstają rekurencyjne wywołania i zostaje dodana przynajmniej jedna przekątna. Jeśli rozważymy drzewko wywołań rekurencyjnych, to liczba liści jest w oczywisty sposób mniejsza równa podwojonej liczbie węzłów niebędących liściami. Zastanówmy się teraz ile może być maksymalnie węzłów niebędących liśćmi. Odpowiadają one przypadkom, w którym dodajemy do zbioru jakąś przekątną. Wiemy z kolei, że w dowolnej triangulacji n-kąta mamy dokładnie n-3 przekątne. Zatem mamy co najwyżej $n-3$ węzły niebędące liśćmi, a stąd łącznie co najwyżej $\mathcal{O}(n)$ wywołań rekurencyjnych.\\
+Czyli ostatecznie złożoność obliczeniowa algorytmu to $\mathcal{O}(n^3)$.
+
+\end{document}

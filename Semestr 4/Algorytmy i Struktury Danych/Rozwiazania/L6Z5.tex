@@ -1,0 +1,90 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} 
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{amsthm}
+ 
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+
+\newenvironment{rozw}{\paragraph{Rozwiązanie:}}{\hfill}
+
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.6in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+
+\title{Zadanie 5 lista 6}
+\author{Jakub Kuciński, prowadzący Szymon Dudycz}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Rozwiązanie}
+Chcemy znaleźć k-ty największy element. Pivot jest wybierany losowo spośród elementów tablicy. Chcemy oszacować oczekiwany czas działania algorytmu. Czas działania algorytmu jest asymptotycznie równy liczbie porównań elementów tablicy. Niech $y_1, y_2, \ldots, y_n$ będą elementami tablicy w kolejności rosnącej. Zauważmy, że jedynym momentem kiedy elementy są porównywane jest moment, gdy jeden z nich jest pivotem. Po stworzeniu zbiorów elementów większych i mniejszych od pivota możemy sprawdzić, czy pivot jest k-ty co do wielkości, dzięki czemu nie będzie brał udział w dalszym wyszukiwaniu k-tego elementu, więc też nigdy więcej nie zostanie porównany. Wiemy zatem, że każde dwa elementy zostaną porównane co najwyżej raz. Wprowadźmy zmienne losowe 
+$$
+X_{i, j} =
+\begin{cases}
+    1, & \text{jeśli $y_i$ oraz $y_j$ zostają porównane przez algorytm} \\
+    0, & \text{w przeciwnym przypadku}
+\end{cases}
+$$
+Zatem oczekiwany czas działania algorytmu to oczekiwana wartość sumy zmiennych losowych $X_{i, j}$.
+\begin{equation*}
+    E\left[\sum_{i,j} X_{i, j}\right] = \sum_{i,j} E\left[ X_{i, j}\right]
+\end{equation*}
+Ustalmy k. Rozważmy przypadki:
+\begin{enumerate}
+    \item $i<j\leq k$\\
+    Jeśli pivotem zostanie wybrany któryś z elementów $y_{k+1}, \ldots, y_n$ to algorytm nie odrzuci ani $y_i$ ani $y_j$. Czyli wybór takiego pivota nie wpływa na szansę porównania elementów $y_i$ i $y_j$. Podobnie wybór pivota spośród elementów $y_1, \ldots, y_{i-1}$ nie wpływa na tą szansę. Jeśli jednak wybrany na pivota zostanie któryś z elementów $y_i, \ldots, y_k$ to któryś (być może oba) z elementów $y_i$ i $y_j$ zostanie odrzucony, więc nie będzie mógł zostać już porównany z drugim. Czyli jedyną szansą na porównanie $y_i$ i $y_j$ jest wybór jednego z nich na pivota spośród elementów $y_i, \ldots, y_k$.\\
+    Możemy policzyć sumę wartości oczekiwanych elementów spełniających powyższy warunek.
+    \begin{align*}
+        &\sum_{i=1}^{k-1}\sum_{j=i+1}^k \frac{2}{k-i+1} = \sum_{i=1}^{k-1} (k-i) \frac{2}{k-i+1} = \sum_{i=1}^{k-1} i \frac{2}{i+1} \leq \sum_{i=1}^k 2 = 2k = \mathcal{O}(n)
+    \end{align*}
+    \item $k\leq i < j$\\
+        Przypadek analogiczny do poprzedniego. Możemy zauważyć, że pytanie o k-ty najmniejszy jest równoważny pytaniu o n-k największy. Wtedy dostaniemy ograniczenie z góry zamiast $2k$ jak w poprzednim przypadku to $2(n-k)$ co jest rzędu $\mathcal{O}(n)$.
+    \item $i<k<j$
+        W tym przypadku wybór pivota spośród $y_1, \ldots, y_{i-1}$ lub $y_{j+1}, \ldots, y_{n}$ nie wpływa na szansę porównania $y_i$ i $y_j$. Jeśli jednak wybrany na pivota zostanie któryś z elementów $y_i, \ldots, y_j$ to któryś (być może oba) z elementów $y_i$ i $y_j$ zostanie odrzucony, więc nie będzie mógł zostać już porównany z drugim. Czyli jedyną szansą na porównanie $y_i$ i $y_j$ jest wybór jednego z nich na pivota spośród elementów $y_i, \ldots, y_j$.\\
+    \begin{align*}
+        &\sum_{i=1}^{k-1}\sum_{j=k+1}^n \frac{2}{j-i+1} = \sum_{i=1}^{k-1} (k-i) \frac{2}{k-i+1} = \sum_{i=1}^{k-1} \sum_{j=k-i+1}^{n-i} \frac{2}{j+1} = 2\sum_{i=1}^{k-1} (H_{n-i+1} - H_{k-i+1}) \leq\\
+        &\leq 2\sum_{i=1}^{k-1} (\ln{(n-i+1)} + 1 - \ln{(k-i+2)}) \leq 2\sum_{i=1}^{k-1} (\ln{(n-i+1)} + 1 - \ln{(k-i)}) = 2\sum_{i=1}^{k-1} (\ln{(\frac{n-i+1}{k-i})} + 1) = \\
+        & = 2k + 2\ln{( \frac{n!}{(k-1)! (n-k+1)!} )} = 2k + 2\ln{({n \choose k-1})} \leq 2k + 2\ln{(2^n)} = 2k + 2n\ln{(2)} = \mathcal{O}(n)
+    \end{align*}
+\end{enumerate}
+Suma wszystkich wartości oczekiwanych jest sumą omówionych powyżej przypadków, a skoro wszystkie są rzędu $\mathcal{O}(n)$ to ich suma też jest rzędu $\mathcal{O}(n)$. Zatem oczekiwana złożoność naszego algorytmu wynosi $\mathcal{O}(n)$.
+\end{document}

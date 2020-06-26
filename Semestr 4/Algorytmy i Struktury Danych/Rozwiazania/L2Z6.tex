@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage[margin=1.25in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{amsthm}
+\usepackage{textcomp}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\title{Algorytmy i struktury danych \\ Lista 2. Zadanie 6}
+\newtheorem{lemma}{Lemat}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\begin{document}
+\maketitle
+\begin{lemma}
+Krawędź e należy do jakiegoś MST wtedy i tylko wtedy, gdy nie jest krawędzią o największej wadze w żadnym cyklu.
+\end{lemma}
+\begin{proof}
+\begin{itemize}
+    \item[$\Rightarrow$] Nie wprost. Załóżmy, że e należy do jakiegoś MST i istnieje cykl, w którym ma największą wagę. Weźmy MST zawierające e. Usuńmy z niego krawędź e, otrzymamy dwie składowe spójne. Zauważmy, że któraś krawędź z cyklu, w którym e ma największą wagę, uspójnia z powrotem graf (końce krawędzi e są w oddzielnych różnych spójnych składowych, a istnieją między nimi dwie drogi na tym cyklu). Otrzymaliśmy MST o mniejszej wadze. Sprzeczność.
+    \item[$\Leftarrow$] Nie wprost. Załóżmy, że e nie jest krawędzią o największej wadze w żadnym cyklu, ale nie należy do żadnego MST. Rozpatrzmy dwa przypadki.
+    \begin{itemize}
+    \item[1\textdegree] Krawędż e nie należy do żadnego cyklu. \\
+    To oznacza, że krawędź e jest mostem w grafie G, czyli musi należeć do każdego MST. Sprzeczność.
+    \item[2\textdegree] Krawędź e należy do jakiegoś cyklu. \\ Rozważmy MST niezawierające e. Dołóżmy e do MST. Dostaliśmy cykl. Wiemy, że e nie ma największej wagi w tym cyklu. Niech e' będzie krawędzią o największej wadze w tym cyklu. Zauważmy, że usunięcie e' spowoduje, że otrzymamy inne drzewo o mniejszej wadze niż nasze MST (bo $C(e)<C(e')$. Sprzeczność.
+\end{itemize}
+\end{itemize}
+\end{proof}
+Z lematu wynika, że jeżeli w G nie znajdziemy cyklu zawierającego krawędź e o pozostałych krawędziach o wadze mniejszej niż $C(e)$, to e należy do jakiegoś MST. Niech e łączy wierzchołki u i v. Chcemy znaleźć ścieżkę łączącą wierzchołki u i v składającą się z krawędzi o mniejszej wadze. Możemy to zrealizować tworząc graf G' składający się tylko z krawędzi o mniejszej wadze niż $C(e)$. W grafie G' algorytmem DFS sprawdzimy, czy wierzchołki u i v są w jednej składowej spójnej.
+
+\newpage
+\begin{algorithm}
+\caption{DFS w G'}
+\begin{algorithmic}[1]
+\For{$e' \in E(G)$}
+\If{$C(e')<C(e)$}
+\State $G' = G' \cup e'$
+\EndIf
+\EndFor
+\State $S \gets pustystos$
+\State S.push(v)
+\While{! S.empty()}
+\State $u \gets$ S.pop()
+\For{$x \in$ N(u)}
+\If{$x == w$}
+\State return false
+\EndIf
+\If{$x == nieodwiedzony$}
+\State $u \gets odwiedzony$
+\State S.push(x)
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+Zauważmy, że stworzenie grafu G' wymaga $m$ porównań. Natomiast DFS wykonuje się w $O(n+m)$ (mamy z reguły mniej krawędzi w grafie G' niż w G). Zatem złożoność całego algorytmu to $O(n+m)$.
+\end{document}

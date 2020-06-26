@@ -129,7 +129,6 @@ double mincirc(int first, int last, const Punkt X[], const Punkt Y[], Trojka *T)
         }
     }
 
-
     int dl = size;
     int a = -1;
     int b = -1;
@@ -169,7 +168,6 @@ double mincirc(int first, int last, const Punkt X[], const Punkt Y[], Trojka *T)
 
 int main()
 {
-
     int n;
     scanf("%d\n", &n);
     Punkt X[n];

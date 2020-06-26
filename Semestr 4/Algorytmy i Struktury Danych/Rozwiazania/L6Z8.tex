@@ -1,0 +1,225 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} 
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{amsthm}
+ 
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+
+\newenvironment{rozw}{\paragraph{Rozwiązanie:}}{\hfill}
+
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.6in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+
+\title{Zadanie 8 lista 6}
+\author{Jakub Kuciński, prowadzący Szymon Dudycz}
+
+\begin{document}
+
+\maketitle
+
+\section{Treść}
+Napisz procedurę $Split(T,k)$ rozdzielającą drzewo AVL $T$ na dwa drzewa AVL: jedno zawierające klucze mniejsze od $k$ i drugie zawierające pozostałe klucze. Jaka jest złożoność Twojej procedury?
+
+\section{Idea rozwiązania}
+Żeby podzielić $T$ na dwa drzewa AVL jedno $T_1$ zawierające klucze mniejsze od $k$ i drugie $T_2$ zawierające pozostałe klucze musimy wyznaczyć, które elementy będą znajdowały się w którym drzewie. Drzewo AVL posiada porządek BST. Możemy przejść $T$ w poszukiwaniu klucza $k$. Wtedy za każdym razem jak skręcamy w lewo możemy dodać wszystkie klucze z prawego poddrzewa do $T_2$ (wszystkie są większe od $k$), jeśli skręcamy w prawo to klucze z lewego poddrzewa do $T_1$ (wszystkie są mniejsze od $k$). Zauważmy, że jeśli będziemy chcieli dodać klucze $T.left$ do $T_1$ i $T_1$ jest drzewem AVL o kluczach mniejszych niż $k$ pochodzących z prawego syna (z $T.right$), to dodawane klucze tworzą drzewo AVL, w którym wszystkie klucze są mniejsze niż w już utworzonym $T_1$. Analogicznie dla $T_2$. Dzięki temu spostrzeżeniu można utworzyć funkcję $Join(T_1, T_2)$ łączącą dwa drzewa AVL, takie że wszystkie klucze pierwszego drzewa są mniejsze od wszystkich kluczy drugiego drzewa, działającą w czasie $\mathcal{O}(\log{n_1} + \log{n_2})$.
+
+\section{Funkcja Split}
+\begin{algorithm}
+\caption{$Split(T, k)$}
+\begin{algorithmic}[1]
+\If{$T == null$}
+    \State \Return $(null, null)$
+\EndIf 
+\If{$T.value == k$}
+    \State \Return $(T.left, Join(makeAVL(T.value), T.right))$
+\EndIf
+\If{$T.value < k$}
+    \State $(T_1, T_2) = Split(T.right, k)$
+    \State \Return $(Join(T.left, T_1),T_2))$
+\EndIf
+\State $(T_1, T_2) = Split(T.left, k)$
+\State \Return $(T_1, Join(T_2, T.right))$
+\end{algorithmic}
+\end{algorithm}
+\pagebreak
+
+\section{Funkcja Join i jej złożoność}
+Funkcja $Join$ przyjmuje za argumenty dwa drzewa AVL $T_1$ i $T_2$ takie, że wszystkie klucze $T_1$ są mniejsze od wszystkich kluczy $T_2$. Na początek potrzebujemy wyznaczyć wysokości $T_1$ i $T_2$. Oba sprawdzenia można wykonać w czasie $\mathcal{O}(\log{n_1} + \log{n_2})$ korzystając z informacji o balansie wierzchołka i idąc za każdym razem do cięższego syna. Rozważmy przypadek, gdy $h(T_1) \geq h(T_2)$. Drugi przypadek jest analogiczny. Musimy znaleźć wierzchołek $minT_2$ w $T_2$, który jest mniejszy od każdego z pozostałych $T_2$. Niech $T_2'$ będzie drzewem $T_2$ po usunięciu $minT_2$. Wierzchołek z $minT_2$ będzie mógł być korzeniem poddrzewa, którego prawym synem będzie $T_2'$, a lewym pewne poddrzewo z $T_1$ o korzeniu w $v$. Będziemy chcieli znaleźć taki wierzchołek $v$ w $T_1$, że $h(v) \in \{h(T_2'), h(T_2')+1 \}$ oraz $v$ jest na skrajnie prawej ścieżce. Zapewnimy sobie w ten sposób, że nowe drzewo o korzeniu w $minT_2$, lewym synie $v$ i prawym synie $T_2'$ zachowuje własności AVL (różnica wysokości synów $\leq 1$ oraz zachowany jest porządek BST). Tak utworzne drzewo podpinamy w dotychczasowe miejsce $v$. Zachowana zostaje własność BST dla całego drzewa, ale potencjalnie mogło dojść do złamania własności AVL w nowym ojcu $minT_2$, bo wysokość jego prawego syna zwiększyła się o 1. Można to naprawić jedną pojedynczą lub podwójną rotacją. Poniższe rysunki ilustrują działanie funkcji $Join$. \\
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,354); %set diagram left start at 0, and has height of 354
+
+%Straight Lines [id:da05375082471145409] 
+\draw    (240,33.4) -- (262.84,58.13) ;
+\draw [shift={(264.2,59.6)}, rotate = 227.27] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da3725261196984082] 
+\draw    (264.2,59.6) -- (282.82,79.15) ;
+\draw [shift={(284.2,80.6)}, rotate = 226.4] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da871129306483156] 
+\draw    (240,33.4) -- (210.5,68.08) ;
+\draw [shift={(209.2,69.6)}, rotate = 310.39] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9966587590969636] 
+\draw    (259,60.4) -- (238.6,81.17) ;
+\draw [shift={(237.2,82.6)}, rotate = 314.48] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da8124950703003887] 
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (284.2,80.6) -- (364.84,168.13) ;
+\draw [shift={(366.2,169.6)}, rotate = 227.34] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da8364540151651743] 
+\draw    (376,192.4) -- (403.92,226.06) ;
+\draw [shift={(405.2,227.6)}, rotate = 230.32] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da05814954713769671] 
+\draw    (376,192.4) -- (349.42,227.01) ;
+\draw [shift={(348.2,228.6)}, rotate = 307.52] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Shape: Cloud [id:dp11931425334991452] 
+\draw   (276.36,234.29) .. controls (278.28,254.45) and (271.97,274.4) .. (260.09,285.69) .. controls (248.22,296.97) and (232.86,297.61) .. (220.55,287.32) .. controls (216.19,299.04) and (208.21,307.13) .. (199.01,309.15) .. controls (189.82,311.17) and (180.51,306.87) .. (173.88,297.56) .. controls (170.16,308.18) and (162.87,315.33) .. (154.58,316.45) .. controls (146.29,317.57) and (138.18,312.5) .. (133.14,303.06) .. controls (126.42,314.32) and (115.74,319.07) .. (105.71,315.24) .. controls (95.69,311.41) and (88.12,299.69) .. (86.28,285.16) .. controls (78.05,281.96) and (71.2,273.82) .. (67.49,262.86) .. controls (63.78,251.9) and (63.59,239.17) .. (66.94,227.98) .. controls (58.84,212.95) and (56.95,192.92) .. (61.97,175.37) .. controls (66.98,157.82) and (78.16,145.38) .. (91.32,142.7) .. controls (91.42,126.23) and (97.75,111.11) .. (107.89,103.18) .. controls (118.02,95.25) and (130.38,95.74) .. (140.19,104.46) .. controls (144.37,84.73) and (156.13,70.21) .. (170.4,67.18) .. controls (184.66,64.15) and (198.87,73.15) .. (206.88,90.28) .. controls (216.7,81.84) and (228.49,79.4) .. (239.58,83.53) .. controls (250.68,87.66) and (260.14,98.01) .. (265.84,112.23) .. controls (275.88,110.56) and (285.58,117.97) .. (290.14,130.8) .. controls (294.7,143.63) and (293.13,159.13) .. (286.23,169.62) .. controls (295.18,177.14) and (299.75,192.05) .. (297.55,206.59) .. controls (295.35,221.12) and (286.88,231.98) .. (276.56,233.51) ; \draw   (286.22,169.63) .. controls (282,166.08) and (277.12,164.47) .. (272.24,165.02)(265.84,112.23) .. controls (263.74,112.58) and (261.68,113.32) .. (259.72,114.44)(206.88,90.28) .. controls (208.36,93.44) and (209.6,96.82) .. (210.57,100.35)(140.19,104.46) .. controls (139.43,108.06) and (138.93,111.77) .. (138.72,115.51)(91.32,142.7) .. controls (91.23,160.24) and (98.21,176.3) .. (109.28,183.98)(66.94,227.98) .. controls (68.74,222.01) and (71.48,216.71) .. (74.94,212.51)(86.28,285.16) .. controls (85.97,282.75) and (85.83,280.3) .. (85.85,277.85)(133.14,303.06) .. controls (134.81,300.25) and (136.19,297.11) .. (137.23,293.74)(173.88,297.56) .. controls (174.77,295.01) and (175.44,292.31) .. (175.86,289.52)(220.55,287.32) .. controls (217.95,285.14) and (215.53,282.53) .. (213.37,279.52)(276.36,234.29) .. controls (276.1,231.51) and (275.68,228.76) .. (275.11,226.08) ;
+%Shape: Cloud [id:dp5887791085898386] 
+\draw   (355.74,285.18) .. controls (356.47,291.41) and (354.07,297.57) .. (349.55,301.05) .. controls (345.04,304.54) and (339.21,304.74) .. (334.53,301.56) .. controls (332.87,305.18) and (329.83,307.68) .. (326.34,308.3) .. controls (322.85,308.92) and (319.31,307.6) .. (316.79,304.72) .. controls (315.37,308) and (312.6,310.21) .. (309.45,310.55) .. controls (306.3,310.9) and (303.22,309.34) .. (301.3,306.42) .. controls (298.75,309.9) and (294.69,311.36) .. (290.88,310.18) .. controls (287.07,309) and (284.19,305.38) .. (283.49,300.89) .. controls (280.36,299.9) and (277.76,297.39) .. (276.35,294.01) .. controls (274.94,290.62) and (274.87,286.69) .. (276.14,283.24) .. controls (273.06,278.59) and (272.34,272.41) .. (274.25,266.99) .. controls (276.16,261.57) and (280.41,257.73) .. (285.41,256.9) .. controls (285.44,251.81) and (287.85,247.14) .. (291.71,244.7) .. controls (295.56,242.25) and (300.25,242.4) .. (303.98,245.09) .. controls (305.57,239) and (310.04,234.52) .. (315.46,233.58) .. controls (320.88,232.64) and (326.28,235.42) .. (329.33,240.71) .. controls (333.06,238.1) and (337.54,237.35) .. (341.76,238.63) .. controls (345.98,239.9) and (349.57,243.1) .. (351.74,247.49) .. controls (355.55,246.97) and (359.24,249.26) .. (360.97,253.23) .. controls (362.71,257.19) and (362.11,261.97) .. (359.49,265.21) .. controls (362.89,267.54) and (364.63,272.14) .. (363.79,276.63) .. controls (362.96,281.12) and (359.74,284.47) .. (355.81,284.94) ; \draw   (359.49,265.22) .. controls (357.88,264.12) and (356.03,263.62) .. (354.17,263.79)(351.74,247.49) .. controls (350.94,247.6) and (350.16,247.83) .. (349.41,248.17)(329.33,240.71) .. controls (329.89,241.69) and (330.36,242.73) .. (330.73,243.82)(303.98,245.09) .. controls (303.69,246.2) and (303.5,247.35) .. (303.42,248.5)(285.41,256.9) .. controls (285.37,262.31) and (288.03,267.27) .. (292.23,269.65)(276.14,283.24) .. controls (276.83,281.39) and (277.87,279.76) .. (279.18,278.46)(283.49,300.89) .. controls (283.37,300.15) and (283.32,299.39) .. (283.33,298.63)(301.3,306.42) .. controls (301.94,305.55) and (302.46,304.58) .. (302.86,303.54)(316.79,304.72) .. controls (317.13,303.93) and (317.38,303.1) .. (317.54,302.24)(334.53,301.56) .. controls (333.54,300.89) and (332.62,300.08) .. (331.8,299.15)(355.74,285.18) .. controls (355.64,284.32) and (355.48,283.48) .. (355.26,282.65) ;
+%Straight Lines [id:da9458963084424353] 
+\draw    (414,250.4) -- (438.86,278.11) ;
+\draw [shift={(440.2,279.6)}, rotate = 228.1] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da8562446627894112] 
+\draw    (414,250.4) -- (391.46,278.05) ;
+\draw [shift={(390.2,279.6)}, rotate = 309.18] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Shape: Cloud [id:dp7715668560177559] 
+\draw   (363.57,294.05) .. controls (363.16,291) and (364.49,287.98) .. (366.99,286.27) .. controls (369.48,284.57) and (372.71,284.47) .. (375.3,286.03) .. controls (376.21,284.25) and (377.89,283.03) .. (379.82,282.73) .. controls (381.75,282.42) and (383.71,283.07) .. (385.1,284.48) .. controls (385.88,282.87) and (387.42,281.79) .. (389.16,281.62) .. controls (390.9,281.45) and (392.6,282.22) .. (393.66,283.65) .. controls (395.07,281.94) and (397.32,281.23) .. (399.43,281.81) .. controls (401.53,282.38) and (403.12,284.16) .. (403.51,286.35) .. controls (405.24,286.84) and (406.68,288.07) .. (407.46,289.72) .. controls (408.24,291.38) and (408.28,293.31) .. (407.57,295) .. controls (409.28,297.27) and (409.67,300.3) .. (408.62,302.95) .. controls (407.56,305.61) and (405.22,307.49) .. (402.45,307.89) .. controls (402.43,310.38) and (401.1,312.67) .. (398.97,313.87) .. controls (396.84,315.07) and (394.24,314.99) .. (392.18,313.68) .. controls (391.3,316.66) and (388.83,318.85) .. (385.83,319.31) .. controls (382.84,319.77) and (379.85,318.41) .. (378.17,315.82) .. controls (376.1,317.1) and (373.63,317.46) .. (371.3,316.84) .. controls (368.96,316.22) and (366.98,314.65) .. (365.78,312.5) .. controls (363.67,312.75) and (361.63,311.63) .. (360.67,309.69) .. controls (359.71,307.75) and (360.04,305.41) .. (361.49,303.82) .. controls (359.61,302.69) and (358.65,300.43) .. (359.11,298.23) .. controls (359.58,296.04) and (361.36,294.39) .. (363.53,294.16) ; \draw   (361.5,303.82) .. controls (362.38,304.36) and (363.41,304.6) .. (364.43,304.52)(365.78,312.5) .. controls (366.22,312.45) and (366.65,312.34) .. (367.07,312.17)(378.17,315.82) .. controls (377.86,315.34) and (377.6,314.83) .. (377.39,314.3)(392.18,313.68) .. controls (392.34,313.13) and (392.45,312.57) .. (392.49,312)(402.45,307.89) .. controls (402.47,305.24) and (401,302.81) .. (398.68,301.65)(407.57,295) .. controls (407.2,295.9) and (406.62,296.7) .. (405.89,297.34)(403.51,286.35) .. controls (403.57,286.72) and (403.6,287.09) .. (403.6,287.46)(393.66,283.65) .. controls (393.31,284.07) and (393.02,284.55) .. (392.8,285.06)(385.1,284.48) .. controls (384.92,284.86) and (384.78,285.27) .. (384.69,285.69)(375.3,286.03) .. controls (375.84,286.36) and (376.35,286.75) .. (376.8,287.21)(363.57,294.05) .. controls (363.62,294.47) and (363.71,294.88) .. (363.83,295.29) ;
+%Shape: Cloud [id:dp8047343985566346] 
+\draw   (419.57,294.05) .. controls (419.16,291) and (420.49,287.98) .. (422.99,286.27) .. controls (425.48,284.57) and (428.71,284.47) .. (431.3,286.03) .. controls (432.21,284.25) and (433.89,283.03) .. (435.82,282.73) .. controls (437.75,282.42) and (439.71,283.07) .. (441.1,284.48) .. controls (441.88,282.87) and (443.42,281.79) .. (445.16,281.62) .. controls (446.9,281.45) and (448.6,282.22) .. (449.66,283.65) .. controls (451.07,281.94) and (453.32,281.23) .. (455.43,281.81) .. controls (457.53,282.38) and (459.12,284.16) .. (459.51,286.35) .. controls (461.24,286.84) and (462.68,288.07) .. (463.46,289.72) .. controls (464.24,291.38) and (464.28,293.31) .. (463.57,295) .. controls (465.28,297.27) and (465.67,300.3) .. (464.62,302.95) .. controls (463.56,305.61) and (461.22,307.49) .. (458.45,307.89) .. controls (458.43,310.38) and (457.1,312.67) .. (454.97,313.87) .. controls (452.84,315.07) and (450.24,314.99) .. (448.18,313.68) .. controls (447.3,316.66) and (444.83,318.85) .. (441.83,319.31) .. controls (438.84,319.77) and (435.85,318.41) .. (434.17,315.82) .. controls (432.1,317.1) and (429.63,317.46) .. (427.3,316.84) .. controls (424.96,316.22) and (422.98,314.65) .. (421.78,312.5) .. controls (419.67,312.75) and (417.63,311.63) .. (416.67,309.69) .. controls (415.71,307.75) and (416.04,305.41) .. (417.49,303.82) .. controls (415.61,302.69) and (414.65,300.43) .. (415.11,298.23) .. controls (415.58,296.04) and (417.36,294.39) .. (419.53,294.16) ; \draw   (417.5,303.82) .. controls (418.38,304.36) and (419.41,304.6) .. (420.43,304.52)(421.78,312.5) .. controls (422.22,312.45) and (422.65,312.34) .. (423.07,312.17)(434.17,315.82) .. controls (433.86,315.34) and (433.6,314.83) .. (433.39,314.3)(448.18,313.68) .. controls (448.34,313.13) and (448.45,312.57) .. (448.49,312)(458.45,307.89) .. controls (458.47,305.24) and (457,302.81) .. (454.68,301.65)(463.57,295) .. controls (463.2,295.9) and (462.62,296.7) .. (461.89,297.34)(459.51,286.35) .. controls (459.57,286.72) and (459.6,287.09) .. (459.6,287.46)(449.66,283.65) .. controls (449.31,284.07) and (449.02,284.55) .. (448.8,285.06)(441.1,284.48) .. controls (440.92,284.86) and (440.78,285.27) .. (440.69,285.69)(431.3,286.03) .. controls (431.84,286.36) and (432.35,286.75) .. (432.8,287.21)(419.57,294.05) .. controls (419.62,294.47) and (419.71,294.88) .. (419.83,295.29) ;
+
+% Text Node
+\draw (347.2,175.6) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v_{parent}$};
+% Text Node
+\draw (407.2,230.6) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v$};
+% Text Node
+\draw (228,15.4) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle root$};
+% Text Node
+\draw (73,8.4) node [anchor=north west][inner sep=0.75pt]  [font=\Large] [align=left] {$\displaystyle T_{1} :$};
+% Text Node
+\draw (462,227.4) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle h( v) \ \in \left\{h\left( T^{'}_{2}\right) ,h\left( T^{'}_{2}\right) +1\right\}$};
+\end{tikzpicture}\\
+
+
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,468); %set diagram left start at 0, and has height of 468
+
+%Straight Lines [id:da994204928332318] 
+\draw    (190.54,53.4) -- (213.2,78.13) ;
+\draw [shift={(214.55,79.6)}, rotate = 227.5] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da38546477377869126] 
+\draw    (214.55,79.6) -- (233.01,99.15) ;
+\draw [shift={(234.39,100.6)}, rotate = 226.63] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da8036737624814584] 
+\draw    (190.54,53.4) -- (161.28,88.07) ;
+\draw [shift={(159.99,89.6)}, rotate = 310.15999999999997] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da5311999692972329] 
+\draw    (209.39,80.4) -- (189.16,101.17) ;
+\draw [shift={(187.77,102.6)}, rotate = 314.25] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da5071948898941306] 
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (234.39,100.6) -- (334.72,192.45) ;
+\draw [shift={(336.2,193.8)}, rotate = 222.47] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da6622776022687599] 
+\draw    (347.2,213.8) -- (396.71,258.46) ;
+\draw [shift={(398.2,259.8)}, rotate = 222.05] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da23769811840242516] 
+\draw    (347.2,213.8) -- (295.72,257.51) ;
+\draw [shift={(294.2,258.8)}, rotate = 319.66999999999996] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Shape: Cloud [id:dp8920686946765967] 
+\draw   (226.61,254.29) .. controls (228.52,274.45) and (222.25,294.4) .. (210.48,305.69) .. controls (198.69,316.97) and (183.47,317.61) .. (171.25,307.32) .. controls (166.92,319.04) and (159.01,327.13) .. (149.89,329.15) .. controls (140.77,331.17) and (131.53,326.87) .. (124.95,317.56) .. controls (121.27,328.18) and (114.03,335.33) .. (105.81,336.45) .. controls (97.59,337.57) and (89.55,332.5) .. (84.54,323.06) .. controls (77.88,334.32) and (67.29,339.07) .. (57.34,335.24) .. controls (47.39,331.41) and (39.88,319.69) .. (38.06,305.16) .. controls (29.9,301.96) and (23.1,293.82) .. (19.43,282.86) .. controls (15.75,271.9) and (15.55,259.17) .. (18.88,247.98) .. controls (10.85,232.95) and (8.97,212.92) .. (13.94,195.37) .. controls (18.92,177.82) and (30,165.38) .. (43.06,162.7) .. controls (43.16,146.23) and (49.44,131.11) .. (59.5,123.18) .. controls (69.55,115.25) and (81.81,115.74) .. (91.54,124.46) .. controls (95.68,104.73) and (107.35,90.21) .. (121.5,87.18) .. controls (135.65,84.15) and (149.74,93.15) .. (157.69,110.28) .. controls (167.44,101.84) and (179.13,99.4) .. (190.13,103.53) .. controls (201.14,107.66) and (210.52,118.01) .. (216.18,132.23) .. controls (226.13,130.56) and (235.76,137.97) .. (240.28,150.8) .. controls (244.8,163.63) and (243.25,179.13) .. (236.4,189.62) .. controls (245.28,197.14) and (249.82,212.05) .. (247.63,226.59) .. controls (245.45,241.12) and (237.05,251.98) .. (226.81,253.51) ; \draw   (236.4,189.63) .. controls (232.2,186.08) and (227.36,184.47) .. (222.52,185.02)(216.17,132.23) .. controls (214.09,132.58) and (212.05,133.32) .. (210.1,134.44)(157.69,110.28) .. controls (159.16,113.44) and (160.39,116.82) .. (161.35,120.35)(91.54,124.46) .. controls (90.78,128.06) and (90.29,131.77) .. (90.07,135.51)(43.07,162.7) .. controls (42.97,180.24) and (49.9,196.3) .. (60.88,203.98)(18.88,247.98) .. controls (20.66,242.01) and (23.38,236.71) .. (26.81,232.51)(38.06,305.16) .. controls (37.75,302.75) and (37.62,300.3) .. (37.64,297.85)(84.54,323.06) .. controls (86.2,320.25) and (87.57,317.11) .. (88.6,313.74)(124.95,317.56) .. controls (125.84,315.01) and (126.5,312.31) .. (126.92,309.52)(171.25,307.32) .. controls (168.67,305.14) and (166.28,302.53) .. (164.13,299.52)(226.61,254.29) .. controls (226.35,251.51) and (225.93,248.76) .. (225.37,246.08) ;
+%Shape: Cloud [id:dp9868099670422136] 
+\draw   (305.41,305.18) .. controls (306.13,311.41) and (303.75,317.57) .. (299.27,321.05) .. controls (294.8,324.54) and (289.01,324.74) .. (284.37,321.56) .. controls (282.72,325.18) and (279.71,327.68) .. (276.25,328.3) .. controls (272.78,328.92) and (269.27,327.6) .. (266.77,324.72) .. controls (265.37,328) and (262.62,330.21) .. (259.49,330.55) .. controls (256.37,330.9) and (253.31,329.34) .. (251.41,326.42) .. controls (248.88,329.9) and (244.85,331.36) .. (241.07,330.18) .. controls (237.29,329) and (234.44,325.38) .. (233.74,320.89) .. controls (230.64,319.9) and (228.06,317.39) .. (226.66,314.01) .. controls (225.26,310.62) and (225.19,306.69) .. (226.45,303.24) .. controls (223.4,298.59) and (222.69,292.41) .. (224.58,286.99) .. controls (226.47,281.57) and (230.68,277.73) .. (235.64,276.9) .. controls (235.68,271.81) and (238.07,267.14) .. (241.89,264.7) .. controls (245.71,262.25) and (250.37,262.4) .. (254.07,265.09) .. controls (255.64,259) and (260.08,254.52) .. (265.46,253.58) .. controls (270.83,252.64) and (276.19,255.42) .. (279.21,260.71) .. controls (282.92,258.1) and (287.36,257.35) .. (291.54,258.63) .. controls (295.72,259.9) and (299.29,263.1) .. (301.44,267.49) .. controls (305.22,266.97) and (308.88,269.26) .. (310.6,273.23) .. controls (312.32,277.19) and (311.73,281.97) .. (309.13,285.21) .. controls (312.5,287.54) and (314.23,292.14) .. (313.4,296.63) .. controls (312.57,301.12) and (309.37,304.47) .. (305.48,304.94) ; \draw   (309.13,285.22) .. controls (307.53,284.12) and (305.69,283.62) .. (303.85,283.79)(301.44,267.49) .. controls (300.65,267.6) and (299.87,267.83) .. (299.13,268.17)(279.21,260.71) .. controls (279.77,261.69) and (280.24,262.73) .. (280.6,263.82)(254.07,265.09) .. controls (253.78,266.2) and (253.59,267.35) .. (253.51,268.5)(235.65,276.9) .. controls (235.61,282.31) and (238.24,287.27) .. (242.41,289.65)(226.45,303.24) .. controls (227.13,301.39) and (228.16,299.76) .. (229.47,298.46)(233.74,320.89) .. controls (233.63,320.15) and (233.57,319.39) .. (233.58,318.63)(251.41,326.42) .. controls (252.04,325.55) and (252.56,324.58) .. (252.95,323.54)(266.77,324.72) .. controls (267.11,323.93) and (267.36,323.1) .. (267.52,322.24)(284.37,321.56) .. controls (283.38,320.89) and (282.47,320.08) .. (281.66,319.15)(305.41,305.18) .. controls (305.31,304.32) and (305.15,303.48) .. (304.93,302.65) ;
+%Straight Lines [id:da47526286301339116] 
+\draw    (425.14,280.4) -- (447.3,308.24) ;
+\draw [shift={(448.55,309.8)}, rotate = 231.48] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da47892940962875696] 
+\draw    (425.14,280.4) -- (403.43,308.22) ;
+\draw [shift={(402.2,309.8)}, rotate = 307.97] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Shape: Cloud [id:dp11276660993387844] 
+\draw   (341.95,377.05) .. controls (341.55,374) and (342.87,370.98) .. (345.34,369.27) .. controls (347.82,367.57) and (351.02,367.47) .. (353.59,369.03) .. controls (354.5,367.25) and (356.16,366.03) .. (358.08,365.73) .. controls (359.99,365.42) and (361.93,366.07) .. (363.31,367.48) .. controls (364.09,365.87) and (365.61,364.79) .. (367.34,364.62) .. controls (369.06,364.45) and (370.75,365.22) .. (371.81,366.65) .. controls (373.21,364.94) and (375.43,364.23) .. (377.52,364.81) .. controls (379.61,365.38) and (381.19,367.16) .. (381.57,369.35) .. controls (383.29,369.84) and (384.72,371.07) .. (385.49,372.72) .. controls (386.26,374.38) and (386.3,376.31) .. (385.6,378) .. controls (387.29,380.27) and (387.69,383.3) .. (386.64,385.95) .. controls (385.6,388.61) and (383.27,390.49) .. (380.52,390.89) .. controls (380.5,393.38) and (379.18,395.67) .. (377.07,396.87) .. controls (374.96,398.07) and (372.38,397.99) .. (370.34,396.68) .. controls (369.47,399.66) and (367.01,401.85) .. (364.04,402.31) .. controls (361.07,402.77) and (358.11,401.41) .. (356.44,398.82) .. controls (354.39,400.1) and (351.93,400.46) .. (349.62,399.84) .. controls (347.31,399.22) and (345.33,397.65) .. (344.15,395.5) .. controls (342.05,395.75) and (340.03,394.63) .. (339.08,392.69) .. controls (338.13,390.75) and (338.46,388.41) .. (339.9,386.82) .. controls (338.03,385.69) and (337.08,383.43) .. (337.54,381.23) .. controls (337.99,379.04) and (339.76,377.39) .. (341.91,377.16) ; \draw   (339.9,386.82) .. controls (340.78,387.36) and (341.8,387.6) .. (342.81,387.52)(344.15,395.5) .. controls (344.58,395.45) and (345.01,395.34) .. (345.42,395.17)(356.44,398.82) .. controls (356.13,398.34) and (355.87,397.83) .. (355.67,397.3)(370.34,396.68) .. controls (370.49,396.13) and (370.6,395.57) .. (370.64,395)(380.52,390.89) .. controls (380.54,388.24) and (379.09,385.81) .. (376.78,384.65)(385.6,378) .. controls (385.23,378.9) and (384.66,379.7) .. (383.94,380.34)(381.57,369.35) .. controls (381.64,369.72) and (381.67,370.09) .. (381.66,370.46)(371.81,366.65) .. controls (371.46,367.07) and (371.17,367.55) .. (370.95,368.06)(363.31,367.48) .. controls (363.13,367.86) and (362.99,368.27) .. (362.9,368.69)(353.59,369.03) .. controls (354.13,369.36) and (354.63,369.75) .. (355.08,370.21)(341.95,377.05) .. controls (342.01,377.47) and (342.1,377.88) .. (342.21,378.29) ;
+%Shape: Cloud [id:dp764654601401542] 
+\draw   (403.54,377.05) .. controls (403.14,374) and (404.46,370.98) .. (406.93,369.27) .. controls (409.41,367.57) and (412.61,367.47) .. (415.17,369.03) .. controls (416.08,367.25) and (417.75,366.03) .. (419.66,365.73) .. controls (421.58,365.42) and (423.52,366.07) .. (424.9,367.48) .. controls (425.68,365.87) and (427.2,364.79) .. (428.92,364.62) .. controls (430.65,364.45) and (432.34,365.22) .. (433.39,366.65) .. controls (434.79,364.94) and (437.02,364.23) .. (439.11,364.81) .. controls (441.2,365.38) and (442.78,367.16) .. (443.16,369.35) .. controls (444.88,369.84) and (446.3,371.07) .. (447.08,372.72) .. controls (447.85,374.38) and (447.89,376.31) .. (447.19,378) .. controls (448.88,380.27) and (449.27,383.3) .. (448.23,385.95) .. controls (447.18,388.61) and (444.85,390.49) .. (442.11,390.89) .. controls (442.09,393.38) and (440.77,395.67) .. (438.66,396.87) .. controls (436.54,398.07) and (433.97,397.99) .. (431.92,396.68) .. controls (431.05,399.66) and (428.6,401.85) .. (425.63,402.31) .. controls (422.65,402.77) and (419.69,401.41) .. (418.02,398.82) .. controls (415.97,400.1) and (413.52,400.46) .. (411.21,399.84) .. controls (408.89,399.22) and (406.92,397.65) .. (405.73,395.5) .. controls (403.64,395.75) and (401.62,394.63) .. (400.67,392.69) .. controls (399.72,390.75) and (400.04,388.41) .. (401.48,386.82) .. controls (399.62,385.69) and (398.66,383.43) .. (399.12,381.23) .. controls (399.58,379.04) and (401.35,377.39) .. (403.5,377.16) ; \draw   (401.48,386.82) .. controls (402.36,387.36) and (403.38,387.6) .. (404.4,387.52)(405.73,395.5) .. controls (406.17,395.45) and (406.6,395.34) .. (407.01,395.17)(418.02,398.82) .. controls (417.71,398.34) and (417.46,397.83) .. (417.25,397.3)(431.92,396.68) .. controls (432.08,396.13) and (432.18,395.57) .. (432.23,395)(442.11,390.89) .. controls (442.13,388.24) and (440.67,385.81) .. (438.37,384.65)(447.19,378) .. controls (446.82,378.9) and (446.25,379.7) .. (445.52,380.34)(443.16,369.35) .. controls (443.22,369.72) and (443.25,370.09) .. (443.25,370.46)(433.39,366.65) .. controls (433.04,367.07) and (432.76,367.55) .. (432.54,368.06)(424.9,367.48) .. controls (424.72,367.86) and (424.58,368.27) .. (424.49,368.69)(415.17,369.03) .. controls (415.72,369.36) and (416.22,369.75) .. (416.67,370.21)(403.54,377.05) .. controls (403.59,377.47) and (403.68,377.88) .. (403.8,378.29) ;
+%Straight Lines [id:da890319929877037] 
+\draw    (394.05,331.6) -- (419.1,360.29) ;
+\draw [shift={(420.41,361.8)}, rotate = 228.88] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da6135352779271767] 
+\draw    (394.05,331.6) -- (367.43,360.33) ;
+\draw [shift={(366.07,361.8)}, rotate = 312.81] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Curve Lines [id:da7051444203801154] 
+\draw    (399.2,135.8) .. controls (385.34,176.39) and (379.32,138.57) .. (359.8,188.27) ;
+\draw [shift={(359.2,189.8)}, rotate = 291.04] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Curve Lines [id:da1562177958464951] 
+\draw    (479.2,196.8) .. controls (468.37,221.43) and (442.2,221.99) .. (429.76,253.35) ;
+\draw [shift={(429.2,254.8)}, rotate = 290.4] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Curve Lines [id:da6685613398890158] 
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=1.5] [line join = round][line cap = round]   (463.2,259.8) .. controls (485.2,261.8) and (478.51,301.34) .. (479.2,313.8) .. controls (479.22,314.24) and (490.89,318.11) .. (487.2,321.8) .. controls (485.81,323.19) and (480.79,321.61) .. (479.2,322.8) .. controls (477.27,324.25) and (479.18,332.72) .. (479.2,333.8) .. controls (479.2,338.8) and (487.2,393.8) .. (466.2,398.8) ;
+
+% Text Node
+\draw (331.71,192.6) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v_{parent}$};
+% Text Node
+\draw (398.39,260.6) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle min T_{2}$};
+% Text Node
+\draw (178.52,35.4) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle root$};
+% Text Node
+\draw (24.72,28.4) node [anchor=north west][inner sep=0.75pt]  [font=\Large] [align=left] {$\displaystyle T_{new} :$};
+% Text Node
+\draw (406.88,173.4) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle h( minT_{2}) \ =\ h( v) \ +\ 1$};
+% Text Node
+\draw (389.05,310.6) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v$};
+% Text Node
+\draw (443.62,312.8) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle T^{'}_{2}$};
+% Text Node
+\draw (494,305.6) node [anchor=north west][inner sep=0.75pt]   [align=left] {Zachowane własności\\ 		AVL};
+% Text Node
+\draw (317,61.6) node [anchor=north west][inner sep=0.75pt]   [align=left] {Potencjalnie złamana własność AVL\\przez zwiększenie wysokości prawego syna o 1.\\Wówczas wymagana rotacja do poprawienia\\porządku.};
+\end{tikzpicture}\\
+Wyznaczenie wysokości $T_1$ i $T_2$ $\mathcal{O}(\log{n_1} + \log{n_2})$ operacji. Znalezienie i usunięcie najmniejszego elementu w $T_2$ sprowadza się do przejścia maksymalnie lewą ścieżką po $T_2$ i jednej operacji $delete$ - złożoność $\mathcal{O}(\log{n_2})$. Znalezienie odpowiedniego $v$ sprowadza się z kolei do przechodzenia $T_1$ maksymalnie prawą ścieżką licząc przy tym wysokość jaką ma poddrzewo (znamy wysokość $T_1$ i balans każdego wierzchołka, więc wiemy czy przechodząc w prawo wysokość zmniejsza się o 2 czy o 1). Zatrzymujemy się gdy wysokość będzie mniejsza równa $h(T_2) + 1$, czyli $\mathcal{O}(\log{n_1} - \log{n_2})$ operacji. Utworzenie nowego poddrzewa i ewentualna rotacja do przywrócenia porządku AVL wymaga stałej liczby operacji - $\mathcal{O}(1)$. Zatem sumaryczna złożoność funkcji $Join$ wynosi $\mathcal{O}(\log{n_1} + \log{n_2})$.
+
+\section{Złożoność Split}
+Funkcja $Split$ wykona się $\mathcal{O}(log(n))$-krotnie, bo za każdym razem schodzi o jeden poziom drzewa $T$ niżej. Przy każdym wywołaniu $Split$ funkcja $Join$ wykona się co najwyżej raz. Stąd mamy łącznie
+$\mathcal{O}(log(n))~\cdot~\mathcal{O}(log(n))~=~\mathcal{O}(log^2(n))$ operacji.
+
+
+
+\end{document}
+

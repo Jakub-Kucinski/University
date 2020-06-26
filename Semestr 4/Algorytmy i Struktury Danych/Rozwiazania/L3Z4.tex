@@ -1,0 +1,108 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} 
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{amsthm}
+ 
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+
+\newenvironment{rozw}{\paragraph{Rozwiązanie:}}{\hfill}
+
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.6in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+
+\title{Zadanie 4 lista 3}
+\author{Jakub Kuciński, prowadzący Szymon Dudycz}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Treść zadania}
+(\textcolor{green}{P}) Dane jest nieukorzenione drzewo z naturalnymi wagami na krawędziach oraz liczba naturalna C. Ułóż algorytm obliczający, ile jest par wierzchołków odległych od siebie o C.
+
+\section{Idea rozwiązania}
+Aby obliczyć liczbę par wierzchołków odległych od siebie o C można dla każdego wierzchołka obliczyć liczbę wierzchołków odległych od niego o C, następnie zsumować otrzymane wyniki i podzielić przez dwa -- każda para zostanie policzona dwa raz, raz dla każdego wierzchołka z pary. Skoro graf jest drzewem, to istnieje dokładnie jedna droga między dowolnymi dwoma wierzchołkami. Wiemy zatem, że jeśli będziemy przechodzili drzewo za pomocą np. DFS'a i zapamiętywali odległość w jakiej jesteśmy od początkowego wierzchołka, to odwiedzając dany wierzchołek wiemy w jakiej jest odległości od początkowego (bo istnieje tylko jedna droga). Jeśli uznajemy 0 za liczbę naturalną to osobno musimy rozpatrzyć przypadek $C = 0$, bo wówczas każdy wierzchołek jest w odległości 0 do samego siebie i każda para $(v, v)$ jest rozpatrywana dokładnie raz.
+
+\newpage
+\section{Algorytm}
+\begin{algorithm}
+\caption{$DFS(v, d)$}
+\begin{algorithmic}[1]
+\State $k \leftarrow 0$
+\If{$d = C$}
+    \State $k\leftarrow k + 1$
+\EndIf
+\For{$u \in N(v)$}
+    \If{$u$ nieodwiedzony}
+        \State oznacz $u$ jako odwiedzony
+        \If{$d+d(v,u) \leq C$}
+            \State $k\leftarrow k + DFS(u, d+d(v,u))$
+        \EndIf
+    \EndIf
+\EndFor
+\Return $k$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{$Algorytm$}
+\begin{algorithmic}[1]
+\State $p\leftarrow 0$
+\For{$v \in V(G)$}
+    \State oznacz wszystkie wierzchołki jako nieodwiedzone
+    \State oznacz $v$ jako odwiedzony
+    \State $p \leftarrow p + DFS(v, 0)$
+\EndFor
+\If{C = 0}
+    \State $p \leftarrow p + n(G)$
+\EndIf
+\Return $p/2$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Złożoność obliczeniowa i pamięciowa}
+\subsection{Złożoność pamięciowa}
+Graf możemy przechowywać w postaci listy sąsiedztwa, ale oprócz sąsiadów, możemy dodatkowo trzymać również wagę krawędzi łączącej dane wierzchołki. Wymaga to $\mathcal{O}(n+m)$ pamięci, czyli dla drzewa $\mathcal{O}(n)$. Informacje o odwiedzonych wierzchołkach można trzymać w zwykłej tablicy, co wymaga $\mathcal{O}(n)$ pamięci. Pojedyncze wywołanie $DFS(v, d)$ wymaga stałej ilości pamięci stosu. Mamy jednak wywołania rekurencyjne, więc zużywana pamięć będzie wprost proporcjonalna do głębokości wywołań rekurencyjnych, a skoro mamy $n$ wierzchołków, to będzie ona wynosiła co najwyżej $\mathcal{O}(n)$. Zatem całkowita złożoność pamięciowa algorytmu wynosi $\mathcal{O}(n)$.
+
+\subsection{Złożoność obliczeniowa}
+Dla drzewa złożoność czasowa DFS'a wynosi $\mathcal{O}(n)$. Być może drobnego wyjaśnienia wymaga czas sprawdzenia warunku $d+d(v,u) \leq C$. Zauważmy, że iterując się po liście sąsiadów $v$ jesteśmy obecnie w elemencie odpowiadającym wierzchołkowi $u$, zatem dostęp do wagi związanej z krawędzią $(v, u)$ jest w czasie stałym (waga ta jest wpisana w tym elemencie listy sąsiadów). Zastanówmy się więc, jaka jest złożoność procedury Algorytm. Oznaczenie wszystkich wierzchołków jako nieodwiedzonych wymaga każdorazowo $\mathcal{O}(n)$ operacji. DFS tak samo. Pętla, w której znajdują się te instrukcje wykonuje się tyle razy, ile jest wierzchołków w naszym grafie, czyli $n$. Zatem wykonanie się wszystkich obrotów pętli wymaga $\mathcal{O}(n^2)$ czasu. Instrukcje wykonywane przed i po pętli wykonują się w czasie stałym. Stąd ogólna złożoność obliczeniowa algorytmu wynosi $\mathcal{O}(n^2)$.
+
+\end{document}

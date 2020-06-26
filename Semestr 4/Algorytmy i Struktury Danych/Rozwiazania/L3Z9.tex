@@ -1,0 +1,109 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} 
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{amsthm}
+ 
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+
+\newenvironment{rozw}{\paragraph{Rozwiązanie:}}{\hfill}
+
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.6in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+
+\title{Zadanie 9 lista 3}
+\author{Jakub Kuciński, prowadzący Szymon Dudycz}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Treść zadania}
+Jakie jest prawdopodobieństwo wygenerowania permutacji identycznościowej przez sieć Benesa-Waksmana, w której przełączniki ustawiane są losowo i niezależnie od siebie w jeden z dwóch stanów (każdy stan przełącznika jest osiągany z prawdopodobieństwem 1/2).
+
+\section{Analiza sieci}
+Przełączniki w pierwszej kolumnie są ustawione losowo. Rozważmy jakie jest prawdopodobieństwo, że powstanie nam permutacja identycznościowa. Rozważmy dowolny port wejściowy w pierwszej kolumnie. Chcemy, by dane wchodzące do tego portu wyszły portem znajdującym się na tej samej wysokości w ostatniej kolumnie.
+Przełącznik $P$ do którego początkowo weszły dane jest ustawiony losowo, więc dane mogą pójść do górnej lub dolnej sieci rekurencyjnej. Załóżmy, że była to górna. Zauważmy, że dokładnie 1 przewód z przełącznika $P$ wchodzi do górnej sieci rekurencyjnej portem $r$ oraz dokładnie 1 przewód z portu $r'$ prowadzi z górnej sieci rekurencyjnej do przełącznika $P'$ w ostatniej kolumnie odpowiadającemu przełącznikowi $P$. Zatem aby dane przeszły z przełącznika $P$ do przełącznika $P'$ to muszą zostać przesłane w górnej sieci rekurencyjnej z portu $r$ do $r'$. Zauważmy również, że wskazane porty znajdują się na tym samym poziomie. Analogiczne własności zachodzą dla danych wchodzących na wszystkich poziomach pierwszej kolumny. Zatem widzimy, że rekurencyjne sieci również muszą tworzyć permutacje identycznościowe. Dodatkowo przełączniki w ostatniej kolumnie muszą być ustawione tak samo jak przełączniki w pierwszej kolumnie, aby w zakresie tego samego przełącznika dane wyszły dobrym spośród 2 portów.
+
+\newpage
+\section{Obliczanie prawdopodobieństwa}
+Rozważmy przypadek, gdy liczba danych na wejściu wynosi $2^k$. Wtedy prawdopodobieństwo wygenerowania permutacji identycznościowej można opisać wzorem rekurencyjnym:
+\begin{equation}
+    \displaystyle P_{k} = P_{k-1}^2 \cdot \left(\frac{1}{2}\right)^{2^{k-1}}
+\end{equation}
+Nawiązując do poprzedniego rozdziału, by sieć o $2^k$ danych wygenerowała permutację identycznościową, to  sieci rekurencyjne również muszą generować permutacje identycznościowe. Stąd wyraz $P_{k-1}^2$. Dodatkowo wiemy, że każdy przełącznik w ostatniej kolumnie musi być ustawiony tak samo jak w odpowiadający mu w pierwszej kolumnie. Prawdopodobieństwo, że konkretny przełącznik ustawi się tak samo jak mu odpowiadający wynosi 1/2. Skoro mamy $2^{k-1}$ przełączników, to mamy na to szansę $\left(\frac{1}{2}\right)^{2^{k-1}}$. Dodatkowo zauważmy, że dla dwóch danych na wejściu problem redukuje się do odpowiedniego ustawienia pojedynczego przełącznika, który generuje identyczność z prawdopodobieństwem 1/2, czyli:
+\begin{equation}
+    P_1 = \frac{1}{2}
+\end{equation}
+Zauważmy, że skoro $P_1 = \frac{1}{2}$ oraz $ P_{k} = P_{k-1}^2 \cdot \left(\frac{1}{2}\right)^{2^{k-1}}$ to wszystkie wyrazy $P_k$ wyrażają się za pomocą pewnej potęgi 1/2. Możemy zapisać zależność rekurencyjną na wykładnik:
+\begin{equation}
+    a_1 = 1, \; \; \; a_k = 2\cdot a_{k-1} + 2^{k-1}
+\end{equation}
+Zastosujmy metodę anihilatorów do znalezienia jawnego wzoru na $a_k$.
+\begin{align*}
+    a_k - 2\cdot a_{k-1} &= 2^{k-1} \\
+    <a_k> (E-2) &=\; <2^{k-1}> \\
+    <a_k> (E-2)^2 &=\; <0> 
+\end{align*}
+Stąd ogólny wzór na $a_k$ można zapisać jako:
+\begin{equation}
+    a_k = A\cdot 2^k + B\cdot k\cdot 2^k
+\end{equation}
+Podstawiając początkowe wartości $a_1 = 1$ oraz $a_2 = 4$ dostajemy:
+\begin{align*}
+    1 = a_1 &= 2A + 2B \\
+    4 = a_2 &= 4A + 8B \\
+    &\Downarrow \\
+    2 &= 4B \\
+    1 &= 2A + 2B \\
+    &\Downarrow \\
+    \frac{1}{2} &= B \\
+    0 & = A
+\end{align*}
+Zatem ostatecznie
+\begin{equation}
+    a_k = \frac{1}{2}k\cdot 2^k = k\cdot 2^{k-1}
+\end{equation}
+a stąd
+\begin{equation}
+    P_k = \left(\frac{1}{2}\right)^{k\cdot 2^{k-1}}
+\end{equation}
+co jest naszym szukanym prawdopodobieństwem.
+\end{document}

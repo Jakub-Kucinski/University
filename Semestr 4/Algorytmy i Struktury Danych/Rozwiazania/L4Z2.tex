@@ -1,0 +1,101 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} 
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{amsthm}
+ 
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\newtheorem{thm}{Twierdzenie}
+\newtheorem{remark}{Uwaga}
+\newtheorem{lemat}{Lemat}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{definicja}{Definicja}
+\newtheorem{ciekawostka}{Ciekawostka}
+\newtheorem{przyklad}{Przykład}
+
+\newenvironment{rozw}{\paragraph{Rozwiązanie:}}{\hfill}
+
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.6in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+
+\title{Zadanie 2 lista 4}
+\author{Jakub Kuciński, prowadzący Szymon Dudycz}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Treść zadania}
+Zbiór $I\subseteq V$ zbioru wierzchołków w grafie $G=(V, E)$ nazywamy zbiorem niezależnym, jeśli żadne dwa wierzchołki z $I$ nie są połączone krawędzią. Ułóż algorytm, który dla zadanego drzewa T znajduje najliczniejszy zbiór niezależny jego wierzchołków.
+
+\section{Idea rozwiązania}
+Ukorzeńmy graf w dowolnym wierzchołku. Dla dowolnego wierzchołka $v$ zastanówmy się jaki jest maksymalny zbiór niezależny $I_v$ w tworzonym przez niego poddrzewie. Wierzchołek $v$ może należeć lub nie należeć do maksymalnego zbioru niezależnego, stąd mamy przypadki:
+\begin{enumerate}
+    \item $v \in I_v$ \\
+    Wtedy żadne $u$ dziecko $v$ nie może należeć do $I_v$. Wystarczy zatem znaleźć najmniejsze zbiory niezależne poddrzew o korzeniach w $u$, do których nie należą $u$. Zatem $I_v$ będzie ich sumą mnogościową powiększoną o $v$.
+    \item $v \notin I_v$ \\
+    Wtedy zbiory niezależne poddrzew utworzonych w $u$ dzieciach $v$ mogą dowolnie zawierać lub nie zawierać $u$. Czyli $I_v$ będzie sumą mnogościową większych ze zbiorów niezależnych zawierających i niezawierających $u$.
+\end{enumerate}
+Z powyższych rozważań widzimy, że wystarczy dla każdego wierzchołka policzyć maksymalne zbiory niezależne zawierające i niezawierające ich dzieci dla poddrzew o korzeniach w dzieciach. Oczywiście dla liścia $w$ mamy odpowiednio $\{ w \}$ i $\emptyset$. Aby szybko rozpoznać który zbiór niezależny jest większy wystarczy oprócz jego elementów przechowywać również jego rozmiar.
+
+\section{Algorytm}
+\begin{algorithm}
+\caption{$Zbior\_niezalezny(v)$}
+\begin{algorithmic}[1]
+\State $S_{with} \leftarrow \{ v \}$
+\State $S_{without} \leftarrow \emptyset$
+\For{$u \in N(v)$}
+    \If{$u$ nieodwiedzony}
+        \State oznacz $u$ jako odwiedzony
+        \State $A_{with}, A_{without} \leftarrow Zbior\_niezalezny(u)$
+        \State $S_{with}. \leftarrow S_{with} \cup A_{without}$
+        \If{$A_{with}.size > A_{without}.size$}
+            \State $S_{without} \leftarrow S_{without} \cup A_{with} $
+        \Else
+            \State $S_{without} \leftarrow S_{without} \cup A_{without} $
+        \EndIf
+    \EndIf
+\EndFor\\
+\Return $S_{with}, S_{without}$
+\end{algorithmic}
+\end{algorithm}
+W celu obliczenia największego zbioru niezależnego drzewa wystarczy wywołać powyższą procedurę na dowolnym początkowym wierzchołku i zwrócić większy z otrzymanych zbiorów.
+
+\section{Złożoność obliczeniowa i pamięciowa}
+\subsection{Złożoność pamięciowa}
+Utworzenie listy sąsiedztwa wymaga $\mathcal{O}(n)$ pamięci. Zbiory konstruowane przez nasz algorytm mogą być zwykłymi listami wiązanymi, dla których trzymamy wskaźniki na pierwszy i ostatni element oraz rozmiar zbioru. Wówczas łączenie zbiorów polega na podpięciu pewnej listy wiązanej na koniec innej listy wiązanej oraz zmiany rozmiaru zbioru na sumę rozmiarów łączonych zbiorów. W końcowym zbiorze może znaleźć się co najwyżej $n-1$ wierzchołków, stąd zbiory wymagają $\mathcal{O}(n)$ pamięci. Informacje, czy dany wierzchołek został odwiedzony można trzymać w dodatkowej tablicy. Wymaga to $\mathcal{O}(n)$ pamięci. Ostatecznie algorytm zużywa $\mathcal{O}(n)$ pamięci.
+
+\subsection{Złożoność obliczeniowa}
+Każdy wierzchołek zostanie odwiedzony dokładnie raz, tak jak przy zwykłym DFS'ie. Operacje inicjalizacji, sumowania zbiorów, aktualizacji i sprawdzania ich rozmiarów wykonują się w czasie stałym. Stąd złożoność czasowa wynosi $\mathcal{O}(n)$.
+
+\end{document}
