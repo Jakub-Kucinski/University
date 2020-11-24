@@ -35,3 +35,7 @@
 - Software Engineering (Inżynieria Oprogramowania)
 - Human–Computer Interaction (Komunikacja Człowiek-Komputer)
 - Functional Programing (Programowanie Funkcyjne)
+
+## Projects
+- Python, path: Semestr 3 -> Python -> project
+- Java, path: Semestr 2 -> Programowanie obiektowe -> Projekt_obiektowe
