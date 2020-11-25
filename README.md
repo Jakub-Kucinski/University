@@ -34,7 +34,7 @@
 - Evolutionary Algorithms (Algorytmy ewolucyjne)
 - Software Engineering (Inżynieria Oprogramowania)
 - Human–Computer Interaction (Komunikacja Człowiek-Komputer)
-- Functional Programing (Programowanie Funkcyjne)
+- Functional Programming (Programowanie Funkcyjne)
 
 ## Projects
 - Python, path: Semestr 3 -> Python -> project
