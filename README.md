@@ -19,7 +19,7 @@
 ## Semester III - Winter 2019/20
 - Advanced Python Programming (Rozszerzony Kurs Języka Python)
 - Discrete Mathematics Master's Degree (Matematyka Dyskretna Magisterska)
-- Numerical analysis Master's Degree (Analiza Numeryczna Masgisterska)
+- Numerical Analysis Master's Degree (Analiza Numeryczna Magisterska)
 - Selected Areas of Practical Software Development (Wybrane Elementy Praktyki Projektowania Oprogramowania)
 
 ## Semester IV - Summer 2019/20
