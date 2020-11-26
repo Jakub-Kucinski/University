@@ -3,7 +3,6 @@
 - Calculus (Analiza Matematyczna)
 - Computing for Computer Scientists (Podstawowy Warsztat Informatyka)
 - English course B2-II (Angielski B2-II)
-- Initial training in the field of health and safety and fire protection (BHP)
 - Introduction to Computer Science (Wstęp do Informatyki)
 - Introduction to Programming in C (Wstęp do Programowania w C)
 - Logic for Computer Science (Logika dla Informatyków)
