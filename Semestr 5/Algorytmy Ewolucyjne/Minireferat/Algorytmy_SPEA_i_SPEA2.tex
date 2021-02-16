@@ -1,0 +1,241 @@
+\documentclass{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+
+\title[SPEA, SPEA2]{Algorytmy optymalizacji wielokryterialnej \newline SPEA i SPEA2}
+\author[Jakub Kuciński]{Jakub Kuciński}
+\usepackage{datetime}
+\newdate{date}{31}{01}{2021}
+\date{\displaydate{date}}
+
+\usetheme{Warsaw}
+
+\let\babellll\lll
+\let\lll\relax
+\usepackage{amsthm} %proof
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{colortbl}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\newcommand{\szary}{\cellcolor{gray}}
+\usepackage{array,tikz}
+\usetikzlibrary{tikzmark,arrows.meta}
+\usepackage{mathtools}
+\usepackage[noend]{algpseudocode}
+\usepackage{textcomp}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+
+\begin{document}
+
+\frame{\titlepage}
+
+
+\begin{frame}{Front Pareto}
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=6cm]{pareto_2.png}
+    \includegraphics[width=6cm]{Dominated-non-dominated-and-Pareto-front-solution-set.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{SPEA}
+$\boldsymbol{SPEA}(N,\overline{N})$:\smallskip\\
+$\boldsymbol{P_0}$ = Initial-Population()\\
+$\boldsymbol{\overline{P}_0}$ = $\emptyset$, $\boldsymbol{t}$ = 0\\
+\textbf{while not} Termination-Condition():\\
+\quad \quad $\boldsymbol{\overline{P}_{t+1}}$ = Update-archive($\boldsymbol{P_t}, \boldsymbol{\overline{P}_t}$)\\
+\quad \quad Fitness-assignment($\boldsymbol{P_t}, \boldsymbol{\overline{P}_t}$) \\
+\quad \quad $\boldsymbol{{P}_{t+1}}$ = Selection($\boldsymbol{P_t}, \boldsymbol{\overline{P}_t}$)\\
+\quad \quad Recombination($\boldsymbol{{P}_{t+1}}$)\\
+\quad \quad Mutation($\boldsymbol{{P}_{t+1}}$)\\
+\quad \quad Increment($\boldsymbol{t}$)\\
+\textbf{return} $\boldsymbol{\overline{P}_t}$\\
+\bigskip
+Oznaczenia:\\
+$\boldsymbol{N,\overline{N}}$ -- rozmiar populacji, maksymalny rozmiar archiwum\\
+$\boldsymbol{{P}_t}$ -- populacja w $\boldsymbol{t}$-tej iteracji\\
+$\boldsymbol{\overline{P}_t}$ -- archiwum w $\boldsymbol{t}$-tej iteracji\\
+\end{frame}
+
+
+\begin{frame}{Update-archive}
+Uaktualnianie archiwum:
+\begin{itemize}
+    \item Skopiuj archiwum $\boldsymbol{\overline{P}_t}$ do $\boldsymbol{\overline{P}'}$.
+    \item Skopiuj osobniki niezdominowane w $\boldsymbol{{P}_t}$ do $\boldsymbol{\overline{P}'}$.
+    \item Usuń z $\boldsymbol{\overline{P}'}$ osobniki zdominowane.
+    \item Jeśli liczba osobników w zbiorze $\boldsymbol{\overline{P}'}$ przekracza $\boldsymbol{\overline{N}}$ to zmniejsz ich liczbę przez Clustering.
+    \item Przypisz $\boldsymbol{\overline{P}'}$ do $\boldsymbol{\overline{P}_{t+1}}$.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Clustering}
+\begin{itemize}
+    \item Zainicjalizuj $\boldsymbol{C} = \bigcup_{i\in\boldsymbol{\overline{P}'}} \{\{ i \}\}$.
+    \item Jeśli $\vert \boldsymbol{C} \vert \leq \overline{N}$ to przeskocz do ostatniego punktu.
+    \item Policz odległość (w przestrzeni funkcji celu) między wszystkimi klastrami $c1, c2 \in \boldsymbol{C}$:
+    $$d_c = \frac{1}{\vert c_1 \vert \vert c_2 \vert}\cdot  \sum_{\substack{i_1\in c_1 \\ i_2 \in c_2}} d(i_1, i_2)$$
+    \item Połącz dwa klastry znajdujące się najbliżej siebie. Powróć do drugiego punktu.
+    \item Każdy klaster zastąp jego centroidem. Zwróć zbiór tych centroidów.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ilustracja Clusteringu}
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=10cm]{ClusterinExplanation.png}
+    \caption{Eckart Zitzler 1999. Diss. ETH No. 13398. Evolutionary Algorithms for Multiobjective Optimization: Methods and Applications}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Fitness-assignment}
+Obliczanie przystosowania $F(i)$ osobników:
+\begin{itemize}
+    \item Najpierw każdemu osobnikowi $i \in$ $\boldsymbol{\overline{P}_t}$ przypisywana jest wartość $S(i) \in [0, 1)$ proporcjonalna do liczby dominowanych przez nią osobników z $\boldsymbol{{P}_t}$. Formalniej:
+    $$S(i) = \frac{\vert\{ \,j\;\vert\; j\in \boldsymbol{{P}_t} \wedge i \succ j\} \vert}{N+1}$$
+    Przystosowanie $i$ jest równe $S(i)$.
+    \item Przystosowanie osobnika $j \in$ $\boldsymbol{{P}_t}$ wylicza się przez sumowanie wartości $S$ wszystkich osobników z $\boldsymbol{\overline{P}_t}$, które dominują $j$:
+    $$F(j) = 1 +  \sum_{\substack{i\in \boldsymbol{\overline{P}_t} \\ i\, \succ j}} S(i)$$
+    Dodanie jedynki zapewnia, że osobniki z $\boldsymbol{\overline{P}_t}$ będą miały lepsze przystosowanie od osobników z $\boldsymbol{{P}_t}$.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Komentarz do przystosowania}
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=10cm]{FitnessExplanation.png}
+    \caption{Eckart Zitzler 1999. Diss. ETH No. 13398. Evolutionary Algorithms for Multiobjective Optimization: Methods and Applications}
+\end{figure}
+W SPEA jako algorytm selekcji został zaproponowany binarny turniej na sumie zbiorów $\boldsymbol{{P}_t}$ i $\boldsymbol{\overline{P}_t}$.
+\end{frame}
+
+
+\begin{frame}{Problemy SPEA}
+\begin{itemize}
+    \item Osobniki z populacji, które są dominowane przez te same osobniki z archiwum mają taką samą wartość przystosowania (w szczególności jeśli w archiwum jest jeden osobnik to cała populacja ma to samo przystosowanie).
+    \item Jeśli dużo osobników w populacji jest nieporównywalnych, to mamy bardzo mało informacji z dominowania. SPEA nie wykorzystuje informacji o gęstości osobników w populacji.
+    \item Clustering co prawda pozwala zachować charakterystykę frontu w archiwum, ale obcina brzegowe osobniki.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{SPEA2}
+$\boldsymbol{SPEA2}(N,\overline{N})$:\smallskip\\
+$\boldsymbol{P_0}$ = Initial-Population()\\
+$\boldsymbol{\overline{P}_0}$ = $\emptyset$, $\boldsymbol{t}$ = 0\\
+\textbf{while not} Termination-Condition():\\
+\quad \quad Fitness-assignment($\boldsymbol{P_t}, \boldsymbol{\overline{P}_t}$) \\
+\quad \quad $\boldsymbol{\overline{P}_{t+1}}$ = Update-archive($\boldsymbol{P_t}, \boldsymbol{\overline{P}_t}$)\\
+\quad \quad $\boldsymbol{{P}_{t+1}}$ = Selection($\boldsymbol{\overline{P}_{t+1}}$)\\
+\quad \quad Recombination($\boldsymbol{{P}_{t+1}}$)\\
+\quad \quad Mutation($\boldsymbol{{P}_{t+1}}$)\\
+\quad \quad Increment($\boldsymbol{t}$)\\
+\textbf{return} $\boldsymbol{\overline{P}_t}$\\
+\end{frame}
+
+
+\begin{frame}{Fitness-assignment}
+\begin{itemize}
+    \item Każdemu osobnikowi $\boldsymbol{i}$ z $\boldsymbol{P_t}$ oraz $\boldsymbol{\overline{P}_t}$ przypisujemy wartość $S(i) = \vert\{ \,j\;\vert\; j\in \boldsymbol{\overline{P}_t} \cup \boldsymbol{P_t} \wedge i \succ j\} \vert$ odpowiadającą liczbie osobników, które dominuje.
+    \item Dla każdego osobnika obliczane jest surowe przystosowanie:
+    $$R(i) = \sum_{\substack{j\in \boldsymbol{\overline{P}_t} \cup \boldsymbol{P_t} \\ j\, \succ i}} S(j)$$
+    \item Dla każdego osobnika $\boldsymbol{i}$ obliczana jest gęstość $\boldsymbol{\sigma_i^k}$ równa odległości do $\boldsymbol{k}$-tego najbliższego osobnika (w przestrzeni funkcji celu). Zazwyczaj przyjmuje się $\boldsymbol{k} = \sqrt{\boldsymbol{N+\overline{N}}}$. Gęstość określa wzór:
+    $$D(i) = \frac{1}{\sigma_i^k+2}$$
+    \item Końcowe przystosowanie osobnika określa wzór: 
+    $$F(i) = R(i) + D(i)$$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Update-archive}
+    \begin{itemize}
+        \item Najpierw kopiowane zostają niezdominowane osobniki z populacji i archiwum do nowego archiwum: $\boldsymbol{\overline{P}_{t+1}} = \{ i \; \vert \; i \in \boldsymbol{P_t} \cup \boldsymbol{\overline{P}_t} \wedge F(i) < 1 \}$.
+        \item Jeśli $\vert \boldsymbol{\overline{P}_{t+1}} \vert < \boldsymbol{\overline{N}}$ to do $\boldsymbol{\overline{P}_{t+1}}$ zostają dodane najlepsze według przystosowania $\boldsymbol{\overline{N}} - \vert \boldsymbol{\overline{P}_{t+1}} \vert$ osobniki.
+        \item Jeśli $\vert \boldsymbol{\overline{P}_{t+1}} \vert > \boldsymbol{\overline{N}}$ to iteracyjnie usuwane zostają osobniki z  $\boldsymbol{\overline{P}_{t+1}}$ do momentu, aż $\vert \boldsymbol{\overline{P}_{t+1}} \vert = \boldsymbol{\overline{N}}$. Procedura odcinania osobnika polega na wyborze takiego osobnika, który jest w najmniejszej odległości do innego osobnika. Dla osobników o równej minimalnej odległości porównywana jest odległość do drugiego najbliższego itd. Formalniej wybierany jest taki osobnik $i$, że $\forall_{j \in \boldsymbol{\overline{P}_{t+1}}} i \leq_d j$, gdzie:
+        \begin{align*}
+            i \leq_d j \Leftrightarrow \; & \forall_{0<k<\vert \boldsymbol{\overline{P}_{t+1}} \vert} \; \sigma_i^k = \sigma_j^k \; \vee \\
+            & \exists_{0<k<\vert \boldsymbol{\overline{P}_{t+1}} \vert} \; \left[\left(\forall_{0<l<k} \; \sigma_i^l = \sigma_j^l \right) \wedge \sigma_i^k < \sigma_j^k\right]
+        \end{align*}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Ilustracja odcinania}
+    \begin{figure}[htp]
+    \centering
+    \includegraphics[width=10cm]{TruncationExplanation.png}
+    \caption{Zitzler, Eckart; Laumanns, Marco; Thiele, Lothar 2001. SPEA2: Improving the strength pareto evolutionary algorithm}
+\end{figure}
+W SPEA2 algorytm selekcji to binarny turniej na zbiorze $\boldsymbol{\overline{P}_{t+1}}$.
+\end{frame}
+
+
+\begin{frame}{Funkcje ciągłe}
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=8cm]{QVfunction.png}
+    \includegraphics[width=10cm]{QVperformance.png}
+    \caption{Zitzler, Eckart; Laumanns, Marco; Thiele, Lothar 2001. SPEA2: Improving the strength pareto evolutionary algorithm}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Funkcje ciągłe cd.}
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=8cm]{KURfunction.png}
+    \includegraphics[width=10cm]{KURperformance.png}
+    \caption{Zitzler, Eckart; Laumanns, Marco; Thiele, Lothar 2001. SPEA2: Improving the strength pareto evolutionary algorithm}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Problem plecakowy dla m=3}
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=8cm]{Knapsackfunction.png}
+    \includegraphics[width=10cm]{KP3.png}
+    \caption{Zitzler, Eckart; Laumanns, Marco; Thiele, Lothar 2001. SPEA2: Improving the strength pareto evolutionary algorithm}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Problem plecakowy dla m=4}
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=8cm]{Knapsackfunction.png}
+    \includegraphics[width=10cm]{KP4.png}
+    \caption{Zitzler, Eckart; Laumanns, Marco; Thiele, Lothar 2001. SPEA2: Improving the strength pareto evolutionary algorithm}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Wyniki testów}
+\begin{itemize}
+    \item SPEA2 daje znacząco lepsze wyniki od SPEA
+    \item SPEA2 ma bardzo podobną wydajność do NSGA2
+    \item NSGA2 znajduje szerszy front Pareto od SPEA2
+    \item SPEA2 zwraca bardziej równomiernie rozmieszczone osobniki od NSGA2
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Źródła}
+\begin{thebibliography}{9}
+\bibitem{1999}
+Eckart Zitzler (1999). Diss. ETH No. 13398. \textit{Evolutionary Algorithms for Multiobjective Optimization: Methods and Applications}
+\bibitem{2001} 
+Zitzler, Eckart; Laumanns, Marco; Thiele, Lothar (2001). \textit{SPEA2: Improving the strength pareto evolutionary algorithm}
+\end{thebibliography}
+\end{frame}
+
+
+\end{document}
