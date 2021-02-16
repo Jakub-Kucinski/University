@@ -1,0 +1,15 @@
+fun x -> x;;
+fun x -> 0+x;;
+
+fun f g x -> f (g(x));;
+
+fun x y -> x;;
+
+max;;
+
+fun x -> (fun x -> x);;
+
+fun x -> raise (Failure "err");;
+
+
+

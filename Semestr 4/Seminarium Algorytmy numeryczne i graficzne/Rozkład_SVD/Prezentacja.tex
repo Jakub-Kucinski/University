@@ -1,0 +1,548 @@
+\documentclass{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+
+\title[Rozkład SVD]{Rozkład SVD macierzy}
+\author[Kuciński, Kuczmarz]{Jakub Kuciński \and Karol Kuczmarz}
+\usepackage{datetime}
+\newdate{date}{18}{05}{2020}
+\date{\displaydate{date}}
+
+\usetheme{Warsaw}
+
+\let\babellll\lll
+\let\lll\relax
+\usepackage{amsthm} %proof
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{colortbl}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\newcommand{\szary}{\cellcolor{gray}}
+\usepackage{array,tikz}
+\usetikzlibrary{tikzmark,arrows.meta}
+\usepackage{mathtools}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Spis treści}
+\tableofcontents
+\end{frame}
+
+\AtBeginSection[]
+{
+    \begin{frame}
+    \frametitle{Spis treści}
+    \tableofcontents
+    \end{frame}
+}
+
+\AtBeginSubsection[]
+{
+    \begin{frame}
+    \frametitle{Spis treści}
+    \tableofcontents
+    \end{frame}
+}
+
+\section{Podstawowe pojęcia}
+
+\begin{frame}{Wektor własny i wartość własna}
+\begin{block}{Definicja}
+Niech $A \in M_{n \times n} (\mathbb{R})$. Wektor $v \in \mathbb{R}^n$ nazywamy \textbf{wektorem własnym} $A$, jeżeli
+$$ (\exists \lambda \in \mathbb{R}) (Av = \lambda v) $$
+\end{block}
+\pause
+\begin{block}{Definicja}
+\textbf{Wartością własną} macierzy $A \in M_{m \times n}(\mathbb{R})$ nazywamy $\lambda \in \mathbb{R}$ takie, że istnieje niezerowy wektor własny dla $\lambda$ (tzn. $(\exists v \in \mathbb{R}^n \setminus \{ 0 \} ) (Av=\lambda v) $). 
+\end{block}
+    
+\end{frame}
+
+\begin{frame}{Diagonalizacja macierzy}
+\begin{block}{Twierdzenie}
+Jeżeli macierz $A \in M_{n \times n} (\mathbb{R})$ ma $n$ liniowo niezależnych wektorów własnych $v_1$, \ldots, $v_n$ $\in \mathbb{R}^n $ i $\lambda_1$, \ldots, $\lambda_n$ to odpowiadające im wartości własne, to macierz $A$ możemy przedstawić jako
+$$ A = PDP^{-1} $$
+gdzie:
+\begin{itemize}
+    \item $P = (v_1, \ldots, v_n)$
+    \item $D = \begin{pmatrix} \lambda_1 & & \\ & \ddots & \\
+     & & \lambda_n \end{pmatrix} $ diagonalna.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Diagonalizacja macierzy}
+\begin{alertblock}{Uwaga}
+Nie wszystkie macierze można diagonalizować. Można przejść w liczby zespolone, ale dalej możemy mieć wielokrotne wartości własne. Uogólnienie -- \textit{Twierdzenie Jordana}.
+\end{alertblock}
+    
+\end{frame}
+
+\begin{frame}{Standardowy iloczyn skalarny}
+Niech $v,u \in \mathbb{R}^n$. \\ 
+$$u \circ v = \sum_{i=1}^n u_i \cdot v_i = u^Tv$$
+\end{frame}
+
+\begin{frame}{Dodatkowe pojęcia cz. 1}
+\begin{block}{Definicja}
+Macierz kwadratową $A \in M_{n \times n} (\mathbb{R}) $ nazywamy macierzą ortogonalną, jeżeli zachodzi $AA^T = A^TA = I$ (wtedy też $A^T = A^{-1}$).
+\end{block}    
+
+\begin{block}{Definicja}
+Zbiór wektorów będący bazą przestrzeni $\mathbb{R}^n$ taki, że wektory są parami prostopadłe i mające długość $1$ nazywamy bazą ortonormalną.
+\end{block}    
+\end{frame}
+\begin{frame}{Dodatkowe pojęcia cz. 2}
+\begin{block}{Uwaga}
+Ortogonalności macierzy są równoważne warunki:
+\begin{itemize}
+    \item kolumny $A$ stanowią bazę ortonormalną $\mathbb{R}^n$
+    \item wiersze $A$ stanowią bazę ortonormalną $\mathbb{R}^n$
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Macierze symetryczne}
+Do rozkładu SVD potrzebne nam będą szczególnie macierze symetryczne, czyli takie, które są niezmiennicze na operację transpozycji ($A=A^T$). Mają one kilka ciekawych własności.
+\end{frame}
+
+\begin{frame}{Twierdzenie spektralne}
+
+\begin{block}{Twierdzenie}
+Każda symetryczna macierz $A \in M_{n \times n} (\mathbb{R} )$ diagonalizuje się w pewnej bazie ortonormalnej  i wszystkie jej wartości własne są rzeczywiste.
+\end{block}
+    
+\end{frame}
+
+\begin{frame}{Dodatnia określoność}
+\begin{block}{Definicja}
+Macierz symetryczna $A \in M_{n \times n} (\mathbb{R})$ jest dodatnio określona, jeżeli dla każdego $v \in \mathbb{R}^n \setminus \{ 0 \}$ zachodzi
+$$ v \circ Av > 0 $$
+Jeżeli nierówność jest słaba, to mówimy, że macierz jest dodatnio półokreślona.
+\end{block}
+    
+\end{frame}
+
+\begin{frame}{Dodatnia określoność}
+Dodatnia określoność (półokreśloność) jest równoznaczna ze wszystkimi dodatnimi (nieujemnymi) wartościami własnymi macierzy. Z twierdzenia spektralnego mamy $A = PDP^T$. Wtedy 
+$$ v \circ Av = v \circ PDP^Tv = (P^Tv) \circ D(P^Tv) > 0 $$ \pause
+Skoro $P^T$ jest ortogonalna, to jest macierzą zmiany bazy, czyli powyższa równość jest tożsama z
+$$ v \circ Dv > 0 $$
+$$ v \circ Dv = \sum_{i = 1}^n v_i \cdot (\lambda_i v_i) = \sum_{i = 1}^n \lambda_i \cdot v_i^2 $$
+\end{frame}
+
+\begin{frame}{Własności macierzy $A^TA$ i $AA^T$}
+\begin{block}{Lemat}
+Dla dowolnej macierzy $A \in M_{m \times n} (\mathbb{R})$ macierze $AA^T$ i $A^TA$ są symetryczne i dodatnio półokreślone.
+\end{block}
+
+\pause
+\begin{block}{Dowód}
+Macierze $A^TA$ i $AA^T$ są odpowiednio wymiaru $n \times n$ i $m \times m$.
+
+Najpierw pokażemy symetryczność.
+$$ (AA^T)^T = (A^T)^T  A^T = AA^T $$
+$$ (A^TA)^T = A^T (A^T)^T = A^TA $$
+\end{block}
+\end{frame}
+
+\begin{frame}{Własności macierzy $A^TA$ i $AA^T$}
+\begin{block}{Dowód cd.}
+Pokażemy dodatnią półokreśloność $A^TA$, dowód dla macierzy $AA^T$ jest analogiczny.
+Weźmy dowolny wektor $v \in \mathbb{R}^n \setminus \{ 0\}$.
+$$ v \circ A^TA v = Av \circ Av \geq 0 $$
+z definicji iloczynu skalarnego.
+\end{block}
+\end{frame}
+
+\section{Rozkład SVD}
+
+\subsection{Twierdzenie}
+\begin{frame}{Twierdzenie}
+    \begin{block}{Twierdzenie}
+    Każdą macierz $A \in M_{m \times n} (\mathbb{R})$ można przedstawić w postaci iloczynu $A = U \Sigma V^T$, gdzie: \pause
+\begin{itemize}
+    \item $U \in M_{m \times m} (\mathbb{R})$ jest macierzą ortogonalną
+    \item $\Sigma \in M_{m \times n} (\mathbb{R})$ jest macierzą postaci $\begin{pmatrix} D & 0 \end{pmatrix} lub \begin{pmatrix} D \\ 0 \end{pmatrix}$ dla $D$ diagonalnej z nieujemnymi wyrazami na przekątnej uporządkowanymi nierosnąco 
+    \item $V \in M_{n \times n} (\mathbb{R})$ jest macierzą ortogonalną.
+\end{itemize}
+    \end{block}
+\end{frame}
+
+\subsection{Dowód}
+\begin{frame}{Uproszczenie}
+Przeprowadzimy dowód dla założenia, że $m =n$ i wszystkie wartości własne macierzy $A^TA$ są dodatnie.
+\end{frame}
+
+\begin{frame}{Dowód cz. I}
+Macierz $A^TA$ jest symetryczna, więc możemy skorzystać z twierdzenia spektralnego i zapisać ją w postaci  $$A^TA = VDV^T$$
+$$V^TA^TAV = D $$
+$$ (A^TA)^{-1} = (VDV^T)^{-1} = VD^{-1}V^T $$gdzie $D$ diagonalna
+$$ \begin{pmatrix}
+\lambda_1 & & & \\
+ & \lambda_2 & & \\
+ & & \ddots & \\
+ & & & \lambda_n
+\end{pmatrix}$$
+oraz $V$ ortogonalna. 
+
+\end{frame}
+
+\begin{frame}{Dowód cz. II}
+    Ponadto bez straty ogólności możemy założyć, że wartości na przekątnej macierzy $D$ są uporządkowane nierosnąco, czyli $\lambda_1 \geq  \lambda_2 \geq \ldots \geq \lambda_n > 0 $.
+    
+    Niech $U = AVD^{-\frac{1}{2}}$. Zauważmy, że $$UD^{\frac{1}{2}}V^T = AVD^{-\frac{1}{2}} D^\frac{1}{2} V^T = A V I V^T = A I = A$$
+    Wystarczy teraz pokazać, że $U$ jest ortogonalna. Pokażemy, że $UU^T=U^TU = I$
+\end{frame}
+
+\begin{frame}{Dowód cz. III}
+    $$UU^T = AVD^{-\frac{1}{2}} (AVD^{-\frac{1}{2}})^T = AVD^{-\frac{1}{2}} D^{-\frac{1}{2}} V^T A^T = $$ 
+    $$ = AVD^{-1}V^TA^T = A (A^TA)^{-1} A^T = A A^{-1} (A^T)^{-1} A^T = I$$
+    $$U^TU = (AVD^{-\frac{1}{2}})^T AVD^{-\frac{1}{2}} = $$ 
+    $$ = D^{-\frac{1}{2}} V^T A^TA V D^{-\frac{1}{2}} = D^{-\frac{1}{2}} D D^{-\frac{1}{2}} = I $$
+    Zatem $U$ jest ortogonalna.
+\end{frame}
+
+\begin{frame}{Uwaga konstrukcyjna}
+\begin{block}{Uwaga}
+Macierz $U$ jest macierzą wektorów własnych macierzy $AA^T$.
+\end{block}
+\pause
+\begin{block}{Dowód}
+Mamy $$U = AVD^{-\frac{1}{2}} = A \begin{pmatrix} v_1 & \ldots v_n \end{pmatrix} \begin{pmatrix} 
+\frac{1}{\sqrt{\lambda_1}} & & \\
+ & \ddots & \\
+ & & \frac{1}{\sqrt{\lambda_n}}
+\end{pmatrix} =$$
+$$
+= \begin{pmatrix}
+\frac{1}{\sqrt{\lambda_1}}Av_1 & \ldots & \frac{1}{\sqrt{\lambda_n}}Av_n 
+\end{pmatrix} =
+ \begin{pmatrix} u_1 & \ldots & u_m \end{pmatrix}$$ czyli $u_i = \frac{1}{\sqrt{\lambda_i}}Av_i$.
+\end{block}
+\end{frame}
+
+\begin{frame}{Uwaga konstrukcyjna}
+\begin{block}{}
+
+Pokażemy, że $u_i$ jest wektorem własnym macierzy $AA^T$ dla wartości własnej $\lambda_i$.
+
+$$ AA^T \frac{1}{\sqrt{\lambda_i}} Av_i  = \frac{1}{\sqrt{\lambda_i}} A (A^TAv_i) = \frac{1}{\sqrt{\lambda_i}} A \lambda_i v_i = \sqrt{\lambda_i}Av_i $$ 
+$$ AA^T \frac{1}{\sqrt{\lambda_i}} Av_i = \sqrt{\lambda_i}Av_i $$ 
+\end{block}
+    
+\end{frame}
+
+\section{Numeryczne wyznaczanie}
+\begin{frame}{Dwa kroki}
+\begin{itemize}
+    \item Bidiagonalizacja macierzy
+    \item Rozkład SVD macierzy bidiagonalnej
+\end{itemize}
+
+$$ \begin{pmatrix} \ast & \ast & & & \\ & \ast & \ast & & \\ & & \ast & \ddots & \\ & & & \ddots & \ast \\ & & & & \ast \end{pmatrix} $$
+    
+\end{frame}
+
+\begin{frame}{Transformacje Householdera}
+Do bidiagonalizacji będziemy wykorzystywać macierze transformacji Householdera. Wyraża się je wzorem
+$$A = I - 2vv^T $$
+gdzie $v$ jest wektorem długości $1$. Wtedy macierz $A$ jest macierzą ortogonalną.
+\end{frame}
+
+\begin{frame}{Bidiagonalizacja}
+W pierwszym kroku mnożymy naszą macierz przez taką macierz $P_1$, że wyzerujemy wyrazy z pierwszej kolumny.
+$$ P_1 \cdot \begin{pmatrix} \ast & \ast & \ldots & \ast \\
+\szary \ast & \ast & \ldots & \ast \\
+\szary \vdots & \vdots & \ddots & \vdots \\
+\szary \ast & \ast & \ldots & \ast
+\end{pmatrix}
+=
+\begin{pmatrix} \ast & \ast & \ldots & \ast \\
+\szary 0 & \ast & \ldots & \ast \\
+ \szary \vdots & \vdots & \ddots & \vdots \\
+\szary 0 & \ast & \ldots & \ast
+\end{pmatrix}$$
+\end{frame}
+
+\begin{frame}{Bidiagonalizacja}
+Następnie z prawej strony mnożymy przez macierz $Q_1$ taką, że wyzerujemy wyrazy z pierwszego wiersza.
+$$ \begin{pmatrix} \ast & \ast & \szary \ast & \szary \ldots & \szary \ast \\
+0 & \ast & \ast & \ldots & \ast \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & \ast & \ast & \ldots & \ast
+\end{pmatrix}
+\cdot Q_1 = 
+\begin{pmatrix} \ast & \ast & \szary 0 & \szary \ldots & \szary 0 \\
+0 & \ast & \ast & \ldots & \ast \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & \ast & \ast & \ldots & \ast
+\end{pmatrix}$$
+\end{frame}
+
+\begin{frame}{Bidiagonalizacja}
+Wyzerowanie odpowiednich elementów kolumn i wierszy w macierzy $A$ tworzy ciąg macierzy $Q_1$, \ldots, $Q_n$ i $P_1$, \ldots, $P_n$.
+Niech
+$$ P = P_n \ldots P_1 $$
+$$ Q = Q_1 \ldots Q_n $$
+wtedy $PAQ = J$, gdzie $J$ bidiagonalna.
+\end{frame}
+
+\begin{frame}{Metoda iteracyjna}
+    $$ S_n \ldots S_1 \cdot J \cdot T_1 \ldots T_n  \xrightarrow{\text{$n \rightarrow\infty$}} \begin{pmatrix}
+    \ast & & & \\
+    & \ast & & \\
+    & & \ddots & \\
+    & & & \ast \\
+    \end{pmatrix}$$
+    
+    \begin{itemize}
+        \item metoda iteracyjna -- koszt pojedynczego kroku: $O(n^2)$
+        \item metoda ''bezpośrednia'' -- koszt całości: $O(n^3)$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Macierze obrotu Givensa}
+    $$ G(i,j,\theta) = \begin{pmatrix}
+1 & \ldots & 0 & \ldots & 0 & \ldots & 0 \\
+\vdots & \ddots & \vdots & & \vdots & & \vdots \\
+0 & \ldots & c & \ldots & -s & \ldots & 0 \\
+\vdots & & \vdots & \ddots & \vdots & & \vdots \\
+0 & \ldots & s & \ldots & c & \ldots & 0 \\
+\vdots & & \vdots & & \vdots & \ddots & \vdots \\
+0 & \ldots & 0 & \ldots & 0 & \ldots & 1
+\end{pmatrix} $$
+gdzie $c = \cos( \theta)$ i $ s = \sin (\theta)$
+\end{frame}
+
+\begin{frame}{Macierze obrotu Givensa}
+Dokładniej $G(i,j,\theta)$ jest macierzą identycznościową z wyjątkiem wyrazów
+$$ g_{i,i} = g_{j,j} = c $$
+$$ g_{i,j} = -g_{j,i} = s $$
+Zauważmy, że ta macierz jest ortogonalna. 
+\end{frame}
+
+\begin{frame}{Pojedyncza iteracja}
+Najpierw mnożymy z prawej strony przez macierz $T_2 = G(1,2, \theta)$.
+    $$ \begin{pmatrix}
+\ast & \ast & 0 & \ldots & 0 \\
+0 & \ast & \ast & \ldots & 0 \\
+0 & 0 & \ast & \ldots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \ldots & \ast 
+\end{pmatrix} \cdot T_2 = \begin{pmatrix}
+\ast & \ast & 0 & \ldots & 0 \\
+\szary \ast & \ast & \ast & \ldots & 0 \\
+0 & 0 & \ast & \ldots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \ldots & \ast 
+\end{pmatrix} $$
+\end{frame}
+
+\begin{frame}{Pojedyncza iteracja}
+Następnie dobieramy macierz obrotu Givensa $S_2$ tak, by po przemnożeniu z lewej strony wyzerować element $(2,1)$.
+$$ S_2 \cdot \begin{pmatrix}
+\ast & \ast & 0 & \ldots & 0 \\
+\szary \ast & \ast & \ast & \ldots & 0 \\
+0 & 0 & \ast & \ldots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \ldots & \ast 
+\end{pmatrix} =
+\begin{pmatrix}
+\ast & \ast & \szary \ast & \ldots & 0 \\
+0 & \ast & \ast & \ldots & 0 \\
+0 & 0 & \ast & \ldots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \ldots & \ast 
+\end{pmatrix}$$
+
+\end{frame}
+
+\begin{frame}{Pojedyncza iteracja}
+    Można to zobrazować następująco: \\
+
+$$\begin{pmatrix}
+\ast & \ast  & \szary \tikzmark{13} & & & & \\
+\szary \tikzmark{21} & \ast & \ast & \szary \; \: \tikzmark{24} & & & \\
+ & \szary \tikzmark{32} & \ast & & & &  \\
+  & & &  & \ddots &  & \\
+  & & & & & & \szary \tikzmark{56} \\
+  & & & & & \ast & \ast \\
+ & & & & & \szary \tikzmark{65} & \ast 
+\end{pmatrix} $$
+    \begin{tikzpicture}
+    [
+      remember picture,
+      overlay,
+      -latex,
+      color=black,
+      yshift=1ex,
+      shorten >=1pt,
+      shorten <=1pt,
+    ]
+    \draw ({pic cs:21}) -- ({pic cs:13});
+    \draw ({pic cs:13}) -- ({pic cs:32});
+    \draw ({pic cs:32}) -- ({pic cs:24});
+    \draw ({pic cs:56}) -- ({pic cs:65});
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Macierze ortogonalne}
+Mamy macierz diagonalną, ale jak odtworzyć macierze ortogonalne? \pause
+Należy je spamiętywać. \pause
+Mamy $ J = PAQ$ i $\Sigma = SJT$, czyli $A = P^TJQ^T$ i $J = S^T\Sigma T^T$.
+
+Zatem
+$$ A = P^T (S^T \Sigma T^T)Q^T = (P^T S^T) \Sigma (T^TQ^T)$$
+Skoro iloczyn macierzy ortogonalnych jest macierzą ortogonalną, to 
+\begin{center}
+$U \gets P^T S^T$
+
+$V^T \gets T^TQ^T$
+\end{center}    
+\end{frame}
+
+\section{Zastosowania}
+
+\subsection{Kompresja danych}
+\begin{frame}{Kompresja danych}
+Mamy $A = U \Sigma V^T$ (SVD).
+Załóżmy, że
+$$ \Sigma = \begin{pmatrix}
+\sigma_1 &  & & 0 & \ldots & 0 \\
+ & \ddots & & \vdots & & \vdots \\
+ & & \sigma_r & 0 & \ldots & 0 \\
+0 & \ldots & 0 & 0 & \ldots & 0 \\
+\vdots & & \vdots & \vdots & & \vdots \\
+0 & \ldots & 0 & 0 & \ldots & 0 \\
+\end{pmatrix} $$
+
+\end{frame}
+
+
+\begin{frame}{Kompresja danych}
+    Zapiszmy macierze $U$ i $V$ jako $U = \begin{pmatrix} u_1 & \ldots & u_m \end{pmatrix}$ i $V = \begin{pmatrix} v_1 & \ldots & v_n \end{pmatrix}$. \pause
+    
+    Wtedy
+
+$$ A = U \Sigma V^T = \begin{pmatrix} u_1 & \ldots & u_m \end{pmatrix} \Sigma \begin{pmatrix}
+v_1^T \\ \vdots \\ v_n^T
+\end{pmatrix} =  $$ $$=\sigma_1 u_1 v_1^T + \sigma_2 u_2 v_2^T + \ldots + \sigma_r u_r v_r^T  $$
+\end{frame}
+
+\begin{frame}{Skracanie sumy}
+    \begin{itemize}
+    \item wartości na przekątnej macierzy $\Sigma$ są uporządkowane nierosnąco 
+    \item wektory $u_i$ oraz $v_i$ są długości $1$
+    \end{itemize}
+    $$ A = U \Sigma V^T = \begin{pmatrix} u_1 & \ldots & u_m \end{pmatrix} \Sigma \begin{pmatrix}
+v_1^T \\ \vdots \\ v_n^T
+\end{pmatrix} =  $$ $$=\sigma_1 u_1 v_1^T + \ldots + \sigma_r u_r v_r^T  \approx \sigma_1 u_1 v_1^T  + \ldots + \sigma_l u_l v_l^T$$
+dla $l \leq r$.
+\end{frame}
+
+\begin{frame}{Oszczędność pamięciowa}
+\begin{block}{WAŻNE}
+Dane często są przechowywane w postaci bardzo dużych prostokątnych macierzy, więc przedstawienie ich w postaci zredukowanego rozkładu SVD może przynieść dużą oszczędność pamięciową.
+\end{block}
+    
+\end{frame}
+
+\subsection{Inne}
+
+\begin{frame}{Pseudoodwrotność}
+Pseudoodwrotność macierzy $A \in M_{m \times n} (\mathbb{R})$ rozumiemy jako macierz $A^\dag \in M_{n \times m}( \mathbb{R})$ taką, że $$A A^\dag = 
+\begin{pmatrix}
+1 & & & & & \\
+& \ddots & & & & \\
+& & 1 & & & \\
+& & & 0 & & \\
+& & & & \ddots & \\
+& & & & & 0 
+\end{pmatrix} = \bar{I} $$
+\end{frame}
+
+\begin{frame}{Pseudoodwrotność}
+SVD może zostać użyte do policzenia pseudoodwrotności macierzy. Niech $A = U\Sigma V^T$. Wtedy $A^\dag = V\Sigma^\dag U^T$, gdzie $\Sigma^\dag$ rozumiemy jako
+$$ \Sigma^\dag = \begin{pmatrix}
+\frac{1}{\sigma_1} &  & & 0 & \ldots & 0 \\
+ & \ddots & & \vdots & & \vdots \\
+ & & \frac{1}{\sigma_r} & 0 & \ldots & 0 \\
+0 & \ldots & 0 & 0 & \ldots & 0 \\
+\vdots & & \vdots & \vdots & & \vdots \\
+0 & \ldots & 0 & 0 & \ldots & 0 \\
+\end{pmatrix} $$
+$$ A A^\dag = U \Sigma V^T V \Sigma^\dag U^T  = U \Sigma \Sigma^\dag U^T = U\bar{I} U^T = \bar{I} $$
+\end{frame}
+
+\begin{frame}{Rozwiązywanie równań jednorodnych}
+    \begin{block}{Fakt}
+        $$(\forall x \in \mathbb{R} ^n) (Ax=0 \Leftrightarrow A^TAx=0) $$
+    \end{block}
+    Zatem wystarczy rozwiązać układ $A^TAx=0$. Po zdiagonalizowaniu macierzy symetrycznej (tw. spektralne) $A^TA = VDV^T$ możemy podać rozwiązanie jako przestrzeń rozpinaną przez kolumny $V$ odpowiadające zerowym wartościom własnym. 
+\end{frame}
+
+\begin{frame}{Obraz, jądro i rząd}
+    \begin{block}{Fakt}
+        Dla macierzy $A = U \Sigma V^T$:
+        \begin{itemize}
+            \item kolumny macierzy $U$ odpowiadające niezerowym wartościom szczególnym rozpinają obraz przekształcenia liniowego zadanego macierzą $A$
+            \item kolumny macierzy $V$ odpowiadające zerowym wartościom własnym $A^TA$ rozpinają jądro przekształcenia liniowego zadanego macierzą $A$
+            \item $rank(A) = \text{ \# wartości szczególnych}$
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Żródła cz. I}
+\fontsize{8pt}{6}\selectfont
+
+    \begin{thebibliography}{9}
+\bibitem{1970} 
+G. H. Golub and C. Reinsch \textit{Handbook Series Linear Algebra. Singular Value Decomposition and Least Squares Solutions.} Numer. Math. 14, 403--420 (1970)
+
+\bibitem{1965}
+G. Golub and W. Kahan, \textit{Calculating the Singular Values and Pseudo-inverse of a Matrix.} J. Siam Numer. Anal., Ser. B, Vol. 2, No. 2. Printed in U.S.A.. 1965
+
+\bibitem{wiki-svd}
+\textit{Singular value decomposition.} Wikipedia: The Free Encyklopedia (16.05.2020)
+\\\texttt{https://en.wikipedia.org/wiki/Singular\_value\_decomposition} 
+
+
+\bibitem{zastos}
+\textit{Understanding Singular Value Decomposition and its Application in Data Science.} (16.05.2020)
+\\\texttt{https://towardsdatascience.com/understanding-singular-value-\\decomposition-and-its-application-in-data-science-388a54be95d} 
+
+\end{thebibliography}
+\end{frame}
+\begin{frame}{Źródła cz. II}
+\fontsize{8pt}{7.2}\selectfont
+
+    \begin{thebibliography}{9}
+\bibitem{dowod}
+\textit{Proof of the Singular Value Decomposition} (16.05.2020)
+\\\texttt{https://gregorygundersen.com/blog/2018/12/20/svd-proof/}
+
+\bibitem{kielbas}
+A. Kiełbasiński and Hubert Schwetlick, \textit{Numeryczna algebra liniowa.} Wydawnictwo Naukowo-Techniczne
+
+\bibitem{djvu}
+Åke Björck and Germund Dahlquist, \textit{Numerical Methods in Scientific Computing. Volume II.}
+
+\bibitem{algos}
+\textit{MATH2071: LAB \#9: The Singular Value Decomposition.} (16.05.2020)
+\\\texttt{http://www.math.pitt.edu/~sussmanm/2071Spring08/lab09/index.html}
+
+\bibitem{juzniemoge}
+\textit{Wikiwand. Singular value decomposition.} (16.05.2020)
+\\\texttt{https://www.wikiwand.com/en/Singular\_value\_decomposition?fbclid=\\IwAR0\_B1ohQBsQnXalAqx869TnLd2jWU2Mc2TQTwnkXkV\_pMLyT3H189kIbz4\#}
+\end{thebibliography}
+\end{frame}
+%\subsection{Eigenfaces}
+%\subsection{Redukcja szumów}
+\end{document}

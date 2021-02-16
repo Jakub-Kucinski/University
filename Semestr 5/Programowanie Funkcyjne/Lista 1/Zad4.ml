@@ -1,0 +1,19 @@
+(* Jakub Kucinski, grupa efes *)
+
+let ctrue x y = if x > y then x else y;;
+let cfalse x y = if x > y then y else x;;
+
+let cor c1 c2 x y = if c1 x y > c2 x y then c1 x y else c2 x y;;
+let cand c1 c2 x y = if c1 x y < c2 x y then c1 x y else c2 x y;;
+
+let cbool_of_bool b = if b then ctrue else cfalse;;
+let bool_of_cbool cb = if cb true false = true then true else false;;
+
+bool_of_cbool (cor cfalse cfalse);;
+bool_of_cbool (cor cfalse ctrue);;
+bool_of_cbool (cor ctrue cfalse);;
+bool_of_cbool (cor ctrue ctrue);;
+bool_of_cbool (cand cfalse cfalse);;
+bool_of_cbool (cand cfalse ctrue);;
+bool_of_cbool (cand ctrue cfalse);;
+bool_of_cbool (cand ctrue ctrue);;

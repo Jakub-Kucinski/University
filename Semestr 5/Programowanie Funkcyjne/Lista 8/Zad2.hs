@@ -1,0 +1,1 @@
+primes = 2 : [p | p <- [3..], all (\ q -> p `mod` q /= 0) (takeWhile (\ q -> q * q <= p) primes)]

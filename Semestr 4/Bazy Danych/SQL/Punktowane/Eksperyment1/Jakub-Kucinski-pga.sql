@@ -1,1 +1,0 @@
--- Jakub Kuciński, pga

@@ -1,0 +1,17 @@
+Zadanie 4. (12 punktów)
+
+Wartość: 10 punktów, termin 26. dzień maja
+
+1. Proszę spojrzeć na stronę www.populationpyramid.net i dla wybranych krajów: utworzyć tabelę z 10-letnimi przedziałami czasowymi dla ludności ogółem (F+M).
+
+2. Z pliku zadania 2 (albo z raportu umieszczonego na stronie who.int) wziąć łączną liczbę zachorowań w tych krajach (stan na 12. dzień maja) oraz liczbę zgonów (również do 12. maja - uwzględniamy tylko końcową, łączną liczbę).
+
+3. Rozważyć równanie (9) z notatki 8.
+
+4. Rozwiązanie: równanie regresji zachorowań oraz zgonów według piramidy wieku.
+
+5. Wnioski z obliczeń (obliczenia dla wypadków zachorowań, ten sam schemat obliczeń dla liczby zgonów).
+
+6. Liczba krajów > 15.
+
+Ostatnia modyfikacja: piątek, 1 maja 2020, 01:34 

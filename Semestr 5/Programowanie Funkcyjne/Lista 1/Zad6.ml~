@@ -1,0 +1,2 @@
+type cbool = { cbool : ’a. ’a -> ’a -> ’a };;
+type cnum  = { cnum  : ’a. (’a -> ’a) -> ’a -> ’a };;
