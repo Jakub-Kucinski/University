@@ -38,3 +38,4 @@
 ## Projects
 - Python, path: Semestr 3 -> Python -> project
 - Java, path: Semestr 2 -> Programowanie obiektowe -> Projekt_obiektowe
+- Machine Learning, another repository: [Credit_card_customers](https://github.com/Jakub-Kucinski/Credit_card_customers)
