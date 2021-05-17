@@ -39,3 +39,4 @@
 - Python, path: Semestr 3 -> Python -> [project](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%203/Python/project)
 - Java, path: Semestr 2 -> Programowanie obiektowe -> [Projekt_obiektowe](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%202/Programowanie%20obiektowe/Projekt_obiektowe)
 - Machine Learning, another repository: [Credit_card_customers](https://github.com/Jakub-Kucinski/Credit_card_customers)
+- Evolutionary Algorithms, Semestr 5 -> Algorytmy Ewolucyjne -> [Projekt](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%205/Algorytmy%20Ewolucyjne/Projekt)
