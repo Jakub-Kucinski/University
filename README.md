@@ -45,14 +45,14 @@
 # Master's degree - Data Science
 
 ## Semester VII - Winter 2021/22
-- [Algorithmic trading]https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Algorithmic%20trading)
+- [Algorithmic trading](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Algorithmic%20trading)
 - [Linear models](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Linear%20models) (Modele liniowe)
 - [Numerical Optimization](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Numerical%20Optimization)
 - [Optimization of deep neural networks on IoT devices](https://github.com/Jakub-Kucinski/University/tree/master/) (Optymalizacja głębokich sieci neuronowych na urządzenia IoT)
 - [Seminar: Data-Mining - data classification and grouping](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Seminar%20Data-Mining%20-%20data%20classification%20and%20grouping) 
 
 ## Semester VIII - Summer 2021/22
-- [Seminar: Advanced Data Mining]https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Seminar%20Advanced%20Data%20Mining)
+- [Seminar: Advanced Data Mining](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Seminar%20Advanced%20Data%20Mining)
 - [Algorithmic game theory](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Algorithmic%20game%20theory)
 - [Neural Networks and Natural Language Processing](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Neural%20Networks%20and%20Natural%20Language%20Processing)
 - [Project: Machine Learning for Recommender Systems](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Project%20Machine%20Learning%20for%20Recommender%20Systems) (Projekt: Machine Learning for Recommender Systems)
