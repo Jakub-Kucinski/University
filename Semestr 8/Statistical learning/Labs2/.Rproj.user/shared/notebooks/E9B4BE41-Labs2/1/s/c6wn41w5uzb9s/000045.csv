@@ -1,0 +1,2 @@
+"0","par(mfrow=c(1,2), mar=c(5,5,3,1), las=0, bty=""n"")"
+"0","hist(task2[,6,9], xlab = ""FN_sigma_known"", main=paste('Histogram for',  toString(nvars[6]), 'variables'))"

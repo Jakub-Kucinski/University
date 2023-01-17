@@ -1,0 +1,2 @@
+"0","task4[, c(1, 3:7)] <- sapply(task4[, c(1, 3:7)], as.numeric)"
+"0","task4$ncols = factor(task4$ncols)"

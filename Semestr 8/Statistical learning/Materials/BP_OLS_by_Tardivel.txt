@@ -1,0 +1,79 @@
+#Sous la forme standard (i.e les seules inégalités sont des contraintes de positivité)
+library(lpSolve)
+
+N=500#Nombre de simu
+n=100#Nombre de ligne de la matrice de plannification
+p=200  #Nombre de colonne de la matrice de plannification
+rho=0#Corraltion pour chaque ligne
+R=3 # strenght of the signal
+k=20 # sparsity
+
+
+Corr=matrix(nrow=p,ncol=p) #Matrice donnant la corrélation des entrée des lignes de la matrice
+Diagonal=(1-rho)*diag(p)
+NonDiagonal=matrix(nrow=p,ncol=p,rep(rho,p^2))
+
+Corr=Diagonal+NonDiagonal
+C=t(chol(Corr))
+
+
+    U=C%*%matrix(nrow=p,ncol=n,rnorm(n*p))
+    X=t(U)
+    D=as.numeric(rep(1,n)%*%(X^2))
+    X=X%*%diag(sqrt(D)^-1)
+    
+    #U=solve(t(X[,1:100])%*%(X[,1:100]))
+    #V=diag(1/sqrt(diag(U)))
+    #M=V%*%U%*%V
+    
+    
+    b=c(rep(R,k),rep(0,p-k)) # Vraie paramètre
+    Y=X%*%b+rnorm(n) #Signal à analyser
+   sig=1
+    alpha=0.05
+    
+    ### X is the design matrix and Y is the response of the linear model ### 
+    BP_OLS=function(X,Y,sig,alpha) 
+    {
+      
+      A1=diag(rep(1,p))
+      #Mcontrainte est la matrice des contrainte du problème de programmation linéaire
+      Mcontrainte=matrix(nrow=(2*p+n),ncol=5*p)
+      Mcontrainte[1:p,1:p]=A1
+      Mcontrainte[1:p,(p+1):(2*p)]=rep(0,p^2)
+      Mcontrainte[1:p,(2*p+1):(3*p)]=-A1
+      Mcontrainte[(p+1):(2*p),1:p]=rep(0,p^2)
+      Mcontrainte[(p+1):(2*p),(p+1):(2*p)]=A1
+      Mcontrainte[(p+1):(2*p),(2*p+1):(3*p)]=-A1
+      Mcontrainte[1:(2*p),(3*p+1):(5*p)]=diag(rep(1,2*p))
+      Mcontrainte[(2*p+1):(2*p+n),1:p]=X
+      Mcontrainte[(2*p+1):(2*p+n),(p+1):(2*p)]=-X
+      Mcontrainte[(2*p+1):(2*p+n),(2*p+1):(5*p)]=rep(0,(3*n*p))
+      #Fonction à optimiser 
+      foptimiser=c(rep(0,(2*p)),rep(1,p),rep(0,(2*p))) #Correspond à 0*b1+...+0*bp+z1+...+zp
+      #Egalité\inegalité
+      inegalite=rep("=",(2*p+n))
+      #Second membre
+      second_membre_noise=rep(0,(2*p+n))
+      second_membre=c(rep(0,2*p),Y)
+      #Solution
+      s=lp ("min", foptimiser, Mcontrainte, inegalite, second_membre)$solution
+      solution=s[1:p]-s[(p+1):(2*p)]
+      Active_set_init=(1:p)[abs(solution)>0.0000000001]
+      X_sel=X[,Active_set_init]
+      Active_noise=setdiff(Active_set_init,(1:k))
+      Active_set=(1:p)[abs(solution)>4]
+      
+      
+      #nb=nrow(X_sel)
+      #Bmle=solve(t(X_sel)%*%X_sel)%*%t(X_sel)%*%Y
+      #stdev=sig*sqrt(diag(solve(t(X_sel)%*%X_sel)))
+      #Correl=sig^2*diag(1/stdev)%*%solve(t(X_sel)%*%X_sel)%*%diag(1/stdev)
+      
+      #Stat_test=Bmle/sqrt(variances)
+      #thres_bonf=qnorm(1-alpha/(2*nb))
+      Active_set=(1:p)[abs(solution)>4]
+      
+      return(Active_set)
+    }
+    

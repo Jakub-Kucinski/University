@@ -1,0 +1,5 @@
+"0","boxplot(task2[,,4] - task2[,,2],"
+"0","        use.cols = T,"
+"0","        names=string_number_of_columns,"
+"0","        ylab='Est PE sigma unknown - PE',"
+"0","        main='Boxplots of difference between PE and it\'s second estimator')"

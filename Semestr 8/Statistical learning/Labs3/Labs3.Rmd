@@ -1,0 +1,1426 @@
+---
+title: "Labs3"
+author: "Jakub Kuciński"
+date: '2022-04-22'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+```{r, include=F}
+library("bigmemory")
+library("bigstep")
+library(pracma)
+library(glmnet)
+library(mvtnorm)
+library(lpSolve)
+```
+
+
+# Task 1
+
+```{r Theoretical values, include=F}
+sigma = 1
+n = 1000
+p = 950
+beta = c(rep(0, p))
+non_zero_beta_val = 3.5
+ks = c(20, 100, 200)
+opt_lambdas = c(0, 0, 0)
+expected_biases_non_zero_beta = c(0, 0, 0)
+variance = c(0, 0, 0)
+mse_nonzero = c(0, 0, 0)
+mse_zero = c(0, 0, 0)
+
+for(i in 1:length(ks)){
+    k = ks[i]
+    beta[1:k] = non_zero_beta_val
+    optimal_lambda = p*sigma**2 / sum(abs(beta)**2)
+    opt_lambdas[i] = optimal_lambda
+    e_bias = (- optimal_lambda / (1+optimal_lambda)) * non_zero_beta_val
+    expected_biases_non_zero_beta[i] = e_bias
+    variance[i] =1/((1+optimal_lambda)^2)
+    mse_nonzero[i] = sigma^2 / ((1+optimal_lambda)^2) + (optimal_lambda^2 * non_zero_beta_val^2) / ((1+optimal_lambda)^2)
+    mse_zero[i] = sigma^2 / ((1+optimal_lambda)^2)
+}
+```
+
+First let's calculate MSE on single coordinate:
+
+$$
+\begin{align}
+\mathbb{E}\|\hat{\beta_i} - \beta_i\|^2 &= \mathbb{E}\|((X'X+\lambda I)^{-1}X'Y)_i - \beta_i\|^2 = \\
+&= \mathbb{E}\|((1+\lambda)^{-1}X'Y)_i - \beta_i\|^2 = \\
+&= \mathbb{E}\|((1+\lambda)^{-1}X'(X\beta + \epsilon))_i - \beta_i\|^2 = \\
+&= \mathbb{E}\|((1+\lambda)^{-1}X'(X\beta + \epsilon))_i - \beta_i\|^2 = \\
+&= \mathbb{E}\|((1+\lambda)^{-1}(X'X\beta + X'\epsilon))_i - \beta_i\|^2 = \\
+&= \mathbb{E}\|((1+\lambda)^{-1}(\beta + Z))_i - \beta_i\|^2 = \\
+&= \mathbb{E}\left\|\frac{Z_i}{\lambda + 1} - \frac{\lambda \beta_i}{\lambda+1}\right\|^2 = \\
+&= \mathbb{E}\left[\frac{1}{(\lambda+1)^2}Z_i^2\right] - 2\mathbb{E}\left[\frac{\lambda}{(\lambda+1)^2}Z_i\beta_i\right] + \mathbb{E}\left[\frac{\lambda^2}{(\lambda+1)^2}\beta_i^2\right] = \\
+&= \frac{1}{(\lambda+1)^2}\sigma^2 - 2\cdot0 + \frac{\lambda^2}{(\lambda+1)^2}\beta_i^2 = \\
+&= \frac{1}{(\lambda+1)^2}\sigma^2 + \frac{\lambda^2}{(\lambda+1)^2}\beta_i^2
+\end{align}
+$$
+
+
+Now moving to the vector norm we get:
+$$
+\mathbb{E}\|\hat{\beta} - \beta\|^2 = \frac{p}{(\lambda+1)^2}\sigma^2 + \frac{\lambda^2}{(\lambda+1)^2}\|\beta\|^2
+$$
+
+We can find minimum of MSE by calculating the derivative of MSE with respect to $\lambda$:
+$$
+\frac{\partial}{\partial \lambda} \mathbb{E}\|\hat{\beta} - \beta\|^2 = \frac{\partial}{\partial \lambda}\left(\frac{p}{(\lambda+1)^2}\sigma^2 + \frac{\lambda^2}{(\lambda+1)^2}\|\beta\|^2\right) = \frac{-2p}{(\lambda+1)^3}\sigma^2 + \frac{2\lambda}{(\lambda+1)^3}\|\beta\|^2 = 0
+$$
+Now we can get the lambda that minimizes MSE:
+$$
+\lambda = \frac{p\sigma^2}{\|\beta\|^2}
+$$
+
+
+
+For $k = 20, 100, 200$ we get optimal values of lambda equal to: `r opt_lambdas[1]`, `r opt_lambdas[2]`, `r opt_lambdas[3]`, MSE for $\beta_i=3.5$ equal to: `r mse_nonzero[1]`, `r mse_nonzero[2]`, `r mse_nonzero[3]` and MSE for $\beta_i=0$ equal to:`r mse_zero[1]`, `r mse_zero[2]`, `r mse_zero[3]`.
+
+
+The expression for bias can also be easily obtained:
+$$
+\textrm{Bias}(\hat{\beta}_i) = \mathbb{E}[\hat{\beta}_i - \beta_i] = \mathbb{E}\left[\frac{Z_i}{\lambda + 1} - \frac{\lambda \beta_i}{\lambda+1}\right] = \mathbb{E}\left[\frac{Z_i}{\lambda + 1} \right] - \mathbb{E}\left[\frac{\lambda \beta_i}{\lambda+1}\right] = 0 - \frac{\lambda \beta_i}{\lambda+1} = - \frac{\lambda}{\lambda+1} \beta_i
+$$
+
+
+For $\beta_i = 0$ bias is actually zero. For $\beta_i = 3.5$ and optimal values of $\lambda$ for $k = 20, 100, 200$ we obtain expected biases: `r expected_biases_non_zero_beta[1]`, `r expected_biases_non_zero_beta[2]`, `r expected_biases_non_zero_beta[3]`.
+
+
+
+The expression for variance is as follows:
+$$
+\begin{align}
+\textrm{Var}(X) &= \frac{{\beta_i}^2 + 1}{(1+\lambda)^2} - (\textrm{Bias}(\hat{\beta}_i)+\beta_i)^2 =\\
+&= \frac{{\beta_i}^2 + 1}{(1+\lambda)^2} - \left(- \frac{\lambda}{\lambda+1} \beta_i + \beta_i\right)^2 =\\
+&= \frac{{\beta_i}^2 + 1}{(1+\lambda)^2} - \left(- \frac{1}{\lambda+1} \beta_i\right)^2 =\\
+&= \frac{{\beta_i}^2 + 1}{(1+\lambda)^2} - \frac{\beta_i^2}{(1 + \lambda)^2}  = \frac{1}{(1 + \lambda)^2}
+\end{align}
+$$
+
+
+The expression for $\hat\beta_{OLS} $ is as follows:
+$$
+\hat\beta_{OLS} = X'Y = X'(X\beta + \epsilon) = \beta + X' \epsilon
+$$
+We can express $\hat\beta_{\textrm{Ridge}}$ in terms of $\hat\beta_{OLS}$:
+$$
+\hat\beta_{\textrm{Ridge}} = \frac{\hat\beta_{OLS}}{1+\lambda}
+$$
+
+
+
+
+```{r, echo=F}
+sigma = 1
+n = 1000
+p = 950
+X = randortho(n, type="orthonormal")
+X = X[1:n, 1:p]
+beta = c(rep(0, p))
+non_zero_beta_val = 3.5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "emp bias OLS b3.5", "emp bias OLS b0", "emp var OLS b3.5", "emp var OLS b0", "emp mse OLS b3.5", "emp mse OLS b0",
+                     "emp bias Ridge b3.5", "emp bias Ridge b0", "emp var Ridge b3.5", "emp var Ridge b0", "emp mse Ridge b3.5", "emp mse Ridge b0")
+task1 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task1) = names_of_columns
+
+n_experiments = 1000
+for(k in ks){
+    beta[1:k] = non_zero_beta_val
+    experiment_betas_ridge = matrix(0, p, n_experiments)
+    experiment_bias_nonzero_ridge = matrix(0, n_experiments)
+    experiment_bias_zero_ridge = matrix(0, n_experiments)
+    experiment_mse_nonzero_ridge = matrix(0, n_experiments)
+    experiment_mse_zero_ridge = matrix(0, n_experiments)
+    
+    experiment_betas_ols = matrix(0, p, n_experiments)
+    experiment_bias_nonzero_ols = matrix(0, n_experiments)
+    experiment_bias_zero_ols = matrix(0, n_experiments)
+    experiment_mse_nonzero_ols = matrix(0, n_experiments)
+    experiment_mse_zero_ols = matrix(0, n_experiments)
+    for(i_exp in 1:n_experiments){
+        eps = rnorm(1000)
+        optimal_lambda = p*sigma**2 / sum(abs(beta)**2)
+        beta_hat_ols = beta + t(X) %*% eps
+        beta_hat_ridge = beta_hat_ols / (1+optimal_lambda)
+        
+        experiment_betas_ridge[1:p, i_exp] = beta_hat_ridge
+        experiment_bias_nonzero_ridge[i_exp] = mean(beta_hat_ridge[1:k] - non_zero_beta_val)
+        experiment_bias_zero_ridge[i_exp] = mean(beta_hat_ridge[(k+1):p] - 0)
+        experiment_mse_nonzero_ridge[i_exp] = mean((beta_hat_ridge[1:k] - non_zero_beta_val)^2)
+        experiment_mse_zero_ridge[i_exp] = mean((beta_hat_ridge[(k+1):p] - 0)^2)
+        
+        experiment_betas_ols[1:p, i_exp] = beta_hat_ols
+        experiment_bias_nonzero_ols[i_exp] = mean(beta_hat_ols[1:k] - non_zero_beta_val)
+        experiment_bias_zero_ols[i_exp] = mean(beta_hat_ols[(k+1):p] - 0)
+        experiment_mse_nonzero_ols[i_exp] = mean((beta_hat_ols[1:k] - non_zero_beta_val)^2)
+        experiment_mse_zero_ols[i_exp] = mean((beta_hat_ols[(k+1):p] - 0)^2)
+    }
+    emp_bias_nonzero_ridge = mean(experiment_bias_nonzero_ridge)
+    emp_bias_zero_ridge = mean(experiment_bias_zero_ridge)
+    emp_mse_nonzero_ridge = mean(experiment_mse_nonzero_ridge)
+    emp_mse_zero_ridge = mean(experiment_mse_zero_ridge)
+    emp_variance_nonzero_ridge = mean(apply(experiment_betas_ridge[1:k, ], 1, var))
+    emp_variance_zero_ridge = mean(apply(experiment_betas_ridge[(k+1):p, ], 1, var))
+
+    emp_bias_nonzero_ols = mean(experiment_bias_nonzero_ols)
+    emp_bias_zero_ols = mean(experiment_bias_zero_ols)
+    emp_mse_nonzero_ols = mean(experiment_mse_nonzero_ols)
+    emp_mse_zero_ols = mean(experiment_mse_zero_ols)
+    emp_variance_nonzero_ols = mean(apply(experiment_betas_ols[1:k, ], 1, var))
+    emp_variance_zero_ols = mean(apply(experiment_betas_ols[(k+1):p, ], 1, var))
+    
+    task1[nrow(task1) + 1,] = c(k, emp_bias_nonzero_ols, emp_bias_zero_ols, emp_variance_nonzero_ols, emp_variance_zero_ols, emp_mse_nonzero_ols, emp_mse_zero_ols, emp_bias_nonzero_ridge, emp_bias_zero_ridge, emp_variance_nonzero_ridge, emp_variance_zero_ridge, emp_mse_nonzero_ridge, emp_mse_zero_ridge)
+}
+task1
+```
+
+
+
+
+# Task 2
+
+```{r 2, include=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+X = matrix(rnorm(n*p, 0, 1.0/sqrt(n)), n, p)
+e = rnorm(n)
+beta = c(rep(0, p))
+non_zero_beta_val = 3.5
+ks = c(20, 100, 200)
+# ks = c(20)
+
+names_of_columns = c("k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso",
+                     "lambda_crossval_elnet")
+optimal_lambdas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(optimal_lambdas) = names_of_columns
+
+for(k in ks){
+    print("Next iteration")
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    # SURE RIDGE
+    # lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # if (k == 20){
+    #     lambdas = seq(from=1.0 ,by=1.0, to=100.0)
+    # }
+    lambdas = c(2:10 %o% 10^(-5:5))
+    lambda_sure_ridge = 0
+    best_pe = 10000000
+    # RSSs = c(rep(0, length(lambdas)))
+    # sures = c(rep(0, length(lambdas)))
+    # r = c(rep(0, length(lambdas)))
+    # lambda_canonical = c(rep(0, length(lambdas)))
+    # i = 1
+    for(lambda in lambdas){
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_ridge = coefficients(obj_ridge)
+        beta_ridge = beta_ridge[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_ridge)^2)
+        
+        lambda_2 = lambda * n
+        M = X %*% solve(t(X) %*% X + lambda_2 * diag(p)) %*% t(X)
+        sure = RSS + 2 * sigma^2 * sum(diag(M))
+        # RSSs[i] = RSS
+        # sures[i] = sure
+        # r[i] = 2 * sigma^2 * sum(diag(M))
+        # lambda_canonical[i] = lambda_2
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_ridge = lambda
+        }
+        i = i+1
+    }
+    
+    # SURE LASSO
+    lambdas = seq(from=0.00001,by=0.00001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_lasso = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_lasso = coefficients(obj_lasso)
+        beta_lasso = beta_lasso[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_lasso)^2)
+        sure = RSS + 2 * sigma^2 * sum(beta_lasso != 0)
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_lasso = lambda
+        }
+    }
+    
+    # SURE ELASTICNET
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_elnet = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_elnet = coefficients(obj_elnet)
+        beta_elnet = beta_elnet[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_elnet)^2)
+        nonzero_betas_indices = which(beta_elnet != 0)
+        if (length(nonzero_betas_indices) > 0){
+            X_A = X[, nonzero_betas_indices]
+            lambda_2 = lambda * 0.5 * n
+            # Lambda_2 is the ridge part. A is the active set.
+            H = X_A %*% solve(t(X_A) %*% X_A + lambda_2 * diag(length(nonzero_betas_indices))) %*% t(X_A)
+            sure = RSS + 2 * sigma^2 * sum(diag(H))
+            if (sure < best_pe){
+                best_pe = sure
+                lambda_sure_elnet = lambda
+            }
+        }
+    }
+    
+    # CROSSVALIDATION RIDGE
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    obj_cv_ridge = cv.glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, nfolds = 10, lambda=lambdas)
+    lambda_crossval_ridge = obj_cv_ridge$lambda.min
+
+    # CROSSVALIDATION LASSO
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_lasso = cv.glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_lasso = obj_cv_lasso$lambda.min
+    
+    # CROSSVALIDATION ELASTICNET
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_elnet = cv.glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_elnet = obj_cv_elnet$lambda.min
+    
+    # SAVE OPTIMAL LAMBDAS
+    optimal_lambdas[nrow(optimal_lambdas) + 1,] = c(k, lambda_sure_ridge, lambda_sure_lasso, lambda_sure_elnet, lambda_crossval_ridge, lambda_crossval_lasso, lambda_crossval_elnet)
+}
+
+```
+
+
+
+
+```{r 100iterations2, echo=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+# X = matrix(rnorm(n*p, 0, 1.0/sqrt(n)), n, p)
+beta = c(rep(0, p))
+non_zero_beta_val = 3.5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "beta_mse_sure_ridge", "beta_mse_sure_lasso", "beta_mse_sure_elnet", "beta_mse_crossval_ridge", "beta_mse_crossval_lasso",
+                     "beta_mse_crossval_elnet", "beta_mse_ols", "beta_mse_aic", "beta_mse_mbic2")
+mse_betas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_betas) = names_of_columns
+
+names_of_columns = c("k", "mean_mse_sure_ridge", "mean_mse_sure_lasso", "mean_mse_sure_elnet", "mean_mse_crossval_ridge", "mean_mse_crossval_lasso",
+                     "mean_mse_crossval_elnet", "mean_mse_ols", "mean_mse_aic", "mean_mse_mbic2")
+mse_mean = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_mean) = names_of_columns
+
+n_experiments = 100
+for(i in 1:length(ks)){
+    k = ks[i]
+    e = rnorm(n)
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    beta_mse_sure_ridge = 0
+    beta_mse_sure_lasso = 0
+    beta_mse_sure_elnet = 0
+    beta_mse_crossval_ridge = 0
+    beta_mse_crossval_lasso = 0
+    beta_mse_crossval_elnet = 0
+    beta_mse_ols = 0
+    beta_mse_aic = 0
+    beta_mse_mbic2 = 0
+    
+    mean_mse_sure_ridge = 0
+    mean_mse_sure_lasso = 0
+    mean_mse_sure_elnet = 0
+    mean_mse_crossval_ridge = 0
+    mean_mse_crossval_lasso = 0
+    mean_mse_crossval_elnet = 0
+    mean_mse_ols = 0
+    mean_mse_aic = 0
+    mean_mse_mbic2 = 0
+    
+    # optimal_lambdas: "k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso", "lambda_crossval_elnet"
+    
+    for (i_exp in 1:n_experiments){
+        
+        # SURE RIDGE
+        lambda = optimal_lambdas[i, 2]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_ridge = beta_mse_sure_ridge + sum((beta_hat - beta)^2)
+        mean_mse_sure_ridge = mean_mse_sure_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE LASSO
+        lambda = optimal_lambdas[i, 3]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_lasso = beta_mse_sure_lasso + sum((beta_hat - beta)^2)
+        mean_mse_sure_lasso = mean_mse_sure_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE ELASTICNET
+        lambda = optimal_lambdas[i, 4]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_elnet = beta_mse_sure_elnet + sum((beta_hat - beta)^2)
+        mean_mse_sure_elnet = mean_mse_sure_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        #CROSSVALIDATION RIDGE
+        lambda = optimal_lambdas[i, 5]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_ridge = beta_mse_crossval_ridge + sum((beta_hat - beta)^2)
+        mean_mse_crossval_ridge = mean_mse_crossval_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION LASSO
+        lambda = optimal_lambdas[i, 6]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_lasso = beta_mse_crossval_lasso + sum((beta_hat - beta)^2)
+        mean_mse_crossval_lasso = mean_mse_crossval_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION ELASTICNET
+        lambda = optimal_lambdas[i, 7]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_elnet = beta_mse_crossval_elnet + sum((beta_hat - beta)^2)
+        mean_mse_crossval_elnet = mean_mse_crossval_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # OLS
+        beta_hat = lm(Y~X-1)$coefficients
+        beta_mse_ols = beta_mse_ols + sum((beta_hat - beta)^2)
+        mean_mse_ols = mean_mse_ols + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS AIC
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_aic = fast_forward(d, crit=aic)
+        s_obj_aic <- summary(obj_aic)
+        beta_hat <- rep(0, 950)
+        if(length(obj_aic$model) > 0){
+          beta_hat[as.numeric(obj_aic$model)] <- s_obj_aic$coefficients[-1, 1]
+        }
+        beta_mse_aic = beta_mse_aic + sum((beta_hat - beta)^2)
+        mean_mse_aic = mean_mse_aic + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS MBIC2
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_mbic2 = fast_forward(d, crit=mbic2)
+        s_obj_mbic2 <- summary(obj_mbic2)
+        beta_hat <- rep(0, 950)
+        if(length(obj_mbic2$model) > 0){
+          beta_hat[as.numeric(obj_mbic2$model)] <- s_obj_mbic2$coefficients[-1, 1]
+        }
+        beta_mse_mbic2 = beta_mse_mbic2 + sum((beta_hat - beta)^2)
+        mean_mse_mbic2 = mean_mse_mbic2 + sum((X%*%beta_hat - X%*%beta)^2)
+    }
+    mse_betas[nrow(mse_betas) + 1,] = c(k, beta_mse_sure_ridge/n_experiments, beta_mse_sure_lasso/n_experiments, beta_mse_sure_elnet/n_experiments, beta_mse_crossval_ridge/n_experiments, beta_mse_crossval_lasso/n_experiments, beta_mse_crossval_elnet/n_experiments, beta_mse_ols/n_experiments, beta_mse_aic/n_experiments, beta_mse_mbic2/n_experiments)
+    mse_mean[nrow(mse_mean) + 1,] = c(k, mean_mse_sure_ridge/n_experiments, mean_mse_sure_lasso/n_experiments, mean_mse_sure_elnet/n_experiments, mean_mse_crossval_ridge/n_experiments, mean_mse_crossval_lasso/n_experiments, mean_mse_crossval_elnet/n_experiments, mean_mse_ols/n_experiments, mean_mse_aic/n_experiments, mean_mse_mbic2/n_experiments)
+}
+```
+
+
+```{r mse_betas2, echo=F}
+mse_betas
+```
+
+
+```{r mse_mean2, echo=F}
+mse_mean
+```
+
+
+
+
+
+
+
+
+
+# Task 3
+
+
+```{r 3, include=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+X = matrix(rnorm(n*p, 0, 1.0/sqrt(n)), n, p)
+e = rnorm(n)
+beta = c(rep(0, p))
+non_zero_beta_val = 5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso",
+                     "lambda_crossval_elnet")
+optimal_lambdas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(optimal_lambdas) = names_of_columns
+
+for(k in ks){
+    print("Next iteration")
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    # SURE RIDGE
+    # lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # if (k == 20){
+    #     lambdas = seq(from=1.0 ,by=1.0, to=100.0)
+    # }
+    lambdas = c(2:10 %o% 10^(-5:5))
+    lambda_sure_ridge = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_ridge = coefficients(obj_ridge)
+        beta_ridge = beta_ridge[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_ridge)^2)
+        
+        lambda_2 = lambda * n
+        M = X %*% solve(t(X) %*% X + lambda_2 * diag(p)) %*% t(X)
+        sure = RSS + 2 * sigma^2 * sum(diag(M))
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_ridge = lambda
+        }
+    }
+    
+    # SURE LASSO
+    lambdas = seq(from=0.00001,by=0.00001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_lasso = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_lasso = coefficients(obj_lasso)
+        beta_lasso = beta_lasso[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_lasso)^2)
+        sure = RSS + 2 * sigma^2 * sum(beta_lasso != 0)
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_lasso = lambda
+        }
+    }
+    
+    # SURE ELASTICNET
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_elnet = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_elnet = coefficients(obj_elnet)
+        beta_elnet = beta_elnet[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_elnet)^2)
+        nonzero_betas_indices = which(beta_elnet != 0)
+        if (length(nonzero_betas_indices) > 0){
+            X_A = X[, nonzero_betas_indices]
+            lambda_2 = lambda * 0.5 * n
+            # Lambda_2 is the ridge part. A is the active set.
+            H = X_A %*% solve(t(X_A) %*% X_A + lambda_2 * diag(length(nonzero_betas_indices))) %*% t(X_A)
+            sure = RSS + 2 * sigma^2 * sum(diag(H))
+            if (sure < best_pe){
+                best_pe = sure
+                lambda_sure_elnet = lambda
+            }
+        }
+    }
+    
+    # CROSSVALIDATION RIDGE
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    obj_cv_ridge = cv.glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, nfolds = 10, lambda=lambdas)
+    lambda_crossval_ridge = obj_cv_ridge$lambda.min
+
+    # CROSSVALIDATION LASSO
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_lasso = cv.glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_lasso = obj_cv_lasso$lambda.min
+    
+    # CROSSVALIDATION ELASTICNET
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_elnet = cv.glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_elnet = obj_cv_elnet$lambda.min
+    
+    # SAVE OPTIMAL LAMBDAS
+    optimal_lambdas[nrow(optimal_lambdas) + 1,] = c(k, lambda_sure_ridge, lambda_sure_lasso, lambda_sure_elnet, lambda_crossval_ridge, lambda_crossval_lasso, lambda_crossval_elnet)
+}
+
+```
+
+
+
+```{r 100iterations3, echo=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+# X = matrix(rnorm(n*p, 0, 1.0/sqrt(n)), n, p)
+beta = c(rep(0, p))
+non_zero_beta_val = 5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "beta_mse_sure_ridge", "beta_mse_sure_lasso", "beta_mse_sure_elnet", "beta_mse_crossval_ridge", "beta_mse_crossval_lasso",
+                     "beta_mse_crossval_elnet", "beta_mse_ols", "beta_mse_aic", "beta_mse_mbic2")
+mse_betas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_betas) = names_of_columns
+
+names_of_columns = c("k", "mean_mse_sure_ridge", "mean_mse_sure_lasso", "mean_mse_sure_elnet", "mean_mse_crossval_ridge", "mean_mse_crossval_lasso",
+                     "mean_mse_crossval_elnet", "mean_mse_ols", "mean_mse_aic", "mean_mse_mbic2")
+mse_mean = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_mean) = names_of_columns
+
+n_experiments = 100
+for(i in 1:length(ks)){
+    k = ks[i]
+    e = rnorm(n)
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    beta_mse_sure_ridge = 0
+    beta_mse_sure_lasso = 0
+    beta_mse_sure_elnet = 0
+    beta_mse_crossval_ridge = 0
+    beta_mse_crossval_lasso = 0
+    beta_mse_crossval_elnet = 0
+    beta_mse_ols = 0
+    beta_mse_aic = 0
+    beta_mse_mbic2 = 0
+    
+    mean_mse_sure_ridge = 0
+    mean_mse_sure_lasso = 0
+    mean_mse_sure_elnet = 0
+    mean_mse_crossval_ridge = 0
+    mean_mse_crossval_lasso = 0
+    mean_mse_crossval_elnet = 0
+    mean_mse_ols = 0
+    mean_mse_aic = 0
+    mean_mse_mbic2 = 0
+    
+    # optimal_lambdas: "k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso", "lambda_crossval_elnet"
+    
+    for (i_exp in 1:n_experiments){
+        
+        # SURE RIDGE
+        lambda = optimal_lambdas[i, 2]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_ridge = beta_mse_sure_ridge + sum((beta_hat - beta)^2)
+        mean_mse_sure_ridge = mean_mse_sure_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE LASSO
+        lambda = optimal_lambdas[i, 3]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_lasso = beta_mse_sure_lasso + sum((beta_hat - beta)^2)
+        mean_mse_sure_lasso = mean_mse_sure_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE ELASTICNET
+        lambda = optimal_lambdas[i, 4]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_elnet = beta_mse_sure_elnet + sum((beta_hat - beta)^2)
+        mean_mse_sure_elnet = mean_mse_sure_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        #CROSSVALIDATION RIDGE
+        lambda = optimal_lambdas[i, 5]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_ridge = beta_mse_crossval_ridge + sum((beta_hat - beta)^2)
+        mean_mse_crossval_ridge = mean_mse_crossval_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION LASSO
+        lambda = optimal_lambdas[i, 6]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_lasso = beta_mse_crossval_lasso + sum((beta_hat - beta)^2)
+        mean_mse_crossval_lasso = mean_mse_crossval_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION ELASTICNET
+        lambda = optimal_lambdas[i, 7]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_elnet = beta_mse_crossval_elnet + sum((beta_hat - beta)^2)
+        mean_mse_crossval_elnet = mean_mse_crossval_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # OLS
+        beta_hat = lm(Y~X-1)$coefficients
+        beta_mse_ols = beta_mse_ols + sum((beta_hat - beta)^2)
+        mean_mse_ols = mean_mse_ols + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS AIC
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_aic = fast_forward(d, crit=aic)
+        s_obj_aic <- summary(obj_aic)
+        beta_hat <- rep(0, 950)
+        if(length(obj_aic$model) > 0){
+          beta_hat[as.numeric(obj_aic$model)] <- s_obj_aic$coefficients[-1, 1]
+        }
+        beta_mse_aic = beta_mse_aic + sum((beta_hat - beta)^2)
+        mean_mse_aic = mean_mse_aic + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS MBIC2
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_mbic2 = fast_forward(d, crit=mbic2)
+        s_obj_mbic2 <- summary(obj_mbic2)
+        beta_hat <- rep(0, 950)
+        if(length(obj_mbic2$model) > 0){
+          beta_hat[as.numeric(obj_mbic2$model)] <- s_obj_mbic2$coefficients[-1, 1]
+        }
+        beta_mse_mbic2 = beta_mse_mbic2 + sum((beta_hat - beta)^2)
+        mean_mse_mbic2 = mean_mse_mbic2 + sum((X%*%beta_hat - X%*%beta)^2)
+    }
+    mse_betas[nrow(mse_betas) + 1,] = c(k, beta_mse_sure_ridge/n_experiments, beta_mse_sure_lasso/n_experiments, beta_mse_sure_elnet/n_experiments, beta_mse_crossval_ridge/n_experiments, beta_mse_crossval_lasso/n_experiments, beta_mse_crossval_elnet/n_experiments, beta_mse_ols/n_experiments, beta_mse_aic/n_experiments, beta_mse_mbic2/n_experiments)
+    mse_mean[nrow(mse_mean) + 1,] = c(k, mean_mse_sure_ridge/n_experiments, mean_mse_sure_lasso/n_experiments, mean_mse_sure_elnet/n_experiments, mean_mse_crossval_ridge/n_experiments, mean_mse_crossval_lasso/n_experiments, mean_mse_crossval_elnet/n_experiments, mean_mse_ols/n_experiments, mean_mse_aic/n_experiments, mean_mse_mbic2/n_experiments)
+}
+```
+
+
+```{r mse_betas3, echo=F}
+mse_betas
+```
+
+
+```{r mse_mean3, echo=F}
+mse_mean
+```
+
+
+
+
+
+
+
+
+
+
+# Task 4a
+
+```{r 4a, include=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+sigma_matrix = matrix(rep(0.5, 950*950), nrow=950)
+diag(sigma_matrix) = 1
+sigma_matrix = sigma_matrix / n
+X = rmvnorm(n, rep(0, p), sigma_matrix)
+e = rnorm(n)
+beta = c(rep(0, p))
+non_zero_beta_val = 3.5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso",
+                     "lambda_crossval_elnet")
+optimal_lambdas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(optimal_lambdas) = names_of_columns
+
+for(k in ks){
+    print("Next iteration")
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    # SURE RIDGE
+    # lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # if (k == 20){
+    #     lambdas = seq(from=1.0 ,by=1.0, to=100.0)
+    # }
+    lambdas = c(2:10 %o% 10^(-5:5))
+    lambda_sure_ridge = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_ridge = coefficients(obj_ridge)
+        beta_ridge = beta_ridge[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_ridge)^2)
+        
+        lambda_2 = lambda * n
+        M = X %*% solve(t(X) %*% X + lambda_2 * diag(p)) %*% t(X)
+        sure = RSS + 2 * sigma^2 * sum(diag(M))
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_ridge = lambda
+        }
+    }
+    
+    # SURE LASSO
+    lambdas = seq(from=0.00001,by=0.00001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_lasso = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_lasso = coefficients(obj_lasso)
+        beta_lasso = beta_lasso[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_lasso)^2)
+        sure = RSS + 2 * sigma^2 * sum(beta_lasso != 0)
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_lasso = lambda
+        }
+    }
+    
+    # SURE ELASTICNET
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_elnet = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_elnet = coefficients(obj_elnet)
+        beta_elnet = beta_elnet[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_elnet)^2)
+        nonzero_betas_indices = which(beta_elnet != 0)
+        if (length(nonzero_betas_indices) > 0){
+            X_A = X[, nonzero_betas_indices]
+            lambda_2 = lambda * 0.5 * n
+            # Lambda_2 is the ridge part. A is the active set.
+            H = X_A %*% solve(t(X_A) %*% X_A + lambda_2 * diag(length(nonzero_betas_indices))) %*% t(X_A)
+            sure = RSS + 2 * sigma^2 * sum(diag(H))
+            if (sure < best_pe){
+                best_pe = sure
+                lambda_sure_elnet = lambda
+            }
+        }
+    }
+    
+    # CROSSVALIDATION RIDGE
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    obj_cv_ridge = cv.glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, nfolds = 10, lambda=lambdas)
+    lambda_crossval_ridge = obj_cv_ridge$lambda.min
+
+    # CROSSVALIDATION LASSO
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_lasso = cv.glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_lasso = obj_cv_lasso$lambda.min
+    
+    # CROSSVALIDATION ELASTICNET
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_elnet = cv.glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_elnet = obj_cv_elnet$lambda.min
+    
+    # SAVE OPTIMAL LAMBDAS
+    optimal_lambdas[nrow(optimal_lambdas) + 1,] = c(k, lambda_sure_ridge, lambda_sure_lasso, lambda_sure_elnet, lambda_crossval_ridge, lambda_crossval_lasso, lambda_crossval_elnet)
+}
+
+```
+
+
+
+```{r 100iterations4a, echo=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+# sigma_matrix = matrix(rep(0.5, 950*950), nrow=950)
+# diag(sigma_matrix) = 1
+# sigma_matrix = sigma_matrix / n
+# X = rmvnorm(n, rep(0, p), sigma_matrix)
+beta = c(rep(0, p))
+non_zero_beta_val = 3.5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "beta_mse_sure_ridge", "beta_mse_sure_lasso", "beta_mse_sure_elnet", "beta_mse_crossval_ridge", "beta_mse_crossval_lasso",
+                     "beta_mse_crossval_elnet", "beta_mse_ols", "beta_mse_aic", "beta_mse_mbic2")
+mse_betas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_betas) = names_of_columns
+
+names_of_columns = c("k", "mean_mse_sure_ridge", "mean_mse_sure_lasso", "mean_mse_sure_elnet", "mean_mse_crossval_ridge", "mean_mse_crossval_lasso",
+                     "mean_mse_crossval_elnet", "mean_mse_ols", "mean_mse_aic", "mean_mse_mbic2")
+mse_mean = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_mean) = names_of_columns
+
+n_experiments = 100
+for(i in 1:length(ks)){
+    k = ks[i]
+    e = rnorm(n)
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    beta_mse_sure_ridge = 0
+    beta_mse_sure_lasso = 0
+    beta_mse_sure_elnet = 0
+    beta_mse_crossval_ridge = 0
+    beta_mse_crossval_lasso = 0
+    beta_mse_crossval_elnet = 0
+    beta_mse_ols = 0
+    beta_mse_aic = 0
+    beta_mse_mbic2 = 0
+    
+    mean_mse_sure_ridge = 0
+    mean_mse_sure_lasso = 0
+    mean_mse_sure_elnet = 0
+    mean_mse_crossval_ridge = 0
+    mean_mse_crossval_lasso = 0
+    mean_mse_crossval_elnet = 0
+    mean_mse_ols = 0
+    mean_mse_aic = 0
+    mean_mse_mbic2 = 0
+    
+    # optimal_lambdas: "k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso", "lambda_crossval_elnet"
+    
+    for (i_exp in 1:n_experiments){
+        
+        # SURE RIDGE
+        lambda = optimal_lambdas[i, 2]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_ridge = beta_mse_sure_ridge + sum((beta_hat - beta)^2)
+        mean_mse_sure_ridge = mean_mse_sure_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE LASSO
+        lambda = optimal_lambdas[i, 3]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_lasso = beta_mse_sure_lasso + sum((beta_hat - beta)^2)
+        mean_mse_sure_lasso = mean_mse_sure_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE ELASTICNET
+        lambda = optimal_lambdas[i, 4]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_elnet = beta_mse_sure_elnet + sum((beta_hat - beta)^2)
+        mean_mse_sure_elnet = mean_mse_sure_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        #CROSSVALIDATION RIDGE
+        lambda = optimal_lambdas[i, 5]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_ridge = beta_mse_crossval_ridge + sum((beta_hat - beta)^2)
+        mean_mse_crossval_ridge = mean_mse_crossval_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION LASSO
+        lambda = optimal_lambdas[i, 6]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_lasso = beta_mse_crossval_lasso + sum((beta_hat - beta)^2)
+        mean_mse_crossval_lasso = mean_mse_crossval_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION ELASTICNET
+        lambda = optimal_lambdas[i, 7]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_elnet = beta_mse_crossval_elnet + sum((beta_hat - beta)^2)
+        mean_mse_crossval_elnet = mean_mse_crossval_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # OLS
+        beta_hat = lm(Y~X-1)$coefficients
+        beta_mse_ols = beta_mse_ols + sum((beta_hat - beta)^2)
+        mean_mse_ols = mean_mse_ols + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS AIC
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_aic = fast_forward(d, crit=aic)
+        s_obj_aic <- summary(obj_aic)
+        beta_hat <- rep(0, 950)
+        if(length(obj_aic$model) > 0){
+          beta_hat[as.numeric(obj_aic$model)] <- s_obj_aic$coefficients[-1, 1]
+        }
+        beta_mse_aic = beta_mse_aic + sum((beta_hat - beta)^2)
+        mean_mse_aic = mean_mse_aic + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS MBIC2
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_mbic2 = fast_forward(d, crit=mbic2)
+        s_obj_mbic2 <- summary(obj_mbic2)
+        beta_hat <- rep(0, 950)
+        if(length(obj_mbic2$model) > 0){
+          beta_hat[as.numeric(obj_mbic2$model)] <- s_obj_mbic2$coefficients[-1, 1]
+        }
+        beta_mse_mbic2 = beta_mse_mbic2 + sum((beta_hat - beta)^2)
+        mean_mse_mbic2 = mean_mse_mbic2 + sum((X%*%beta_hat - X%*%beta)^2)
+    }
+    mse_betas[nrow(mse_betas) + 1,] = c(k, beta_mse_sure_ridge/n_experiments, beta_mse_sure_lasso/n_experiments, beta_mse_sure_elnet/n_experiments, beta_mse_crossval_ridge/n_experiments, beta_mse_crossval_lasso/n_experiments, beta_mse_crossval_elnet/n_experiments, beta_mse_ols/n_experiments, beta_mse_aic/n_experiments, beta_mse_mbic2/n_experiments)
+    mse_mean[nrow(mse_mean) + 1,] = c(k, mean_mse_sure_ridge/n_experiments, mean_mse_sure_lasso/n_experiments, mean_mse_sure_elnet/n_experiments, mean_mse_crossval_ridge/n_experiments, mean_mse_crossval_lasso/n_experiments, mean_mse_crossval_elnet/n_experiments, mean_mse_ols/n_experiments, mean_mse_aic/n_experiments, mean_mse_mbic2/n_experiments)
+}
+```
+
+
+```{r mse_betas4a, echo=F}
+mse_betas
+```
+
+
+```{r mse_mean4a, echo=F}
+mse_mean
+```
+
+
+
+
+
+
+
+
+
+
+
+# Task 4b
+```{r 4b, include=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+sigma_matrix = matrix(rep(0.5, 950*950), nrow=950)
+diag(sigma_matrix) = 1
+sigma_matrix = sigma_matrix / n
+X = rmvnorm(n, rep(0, p), sigma_matrix)
+e = rnorm(n)
+beta = c(rep(0, p))
+non_zero_beta_val = 5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso",
+                     "lambda_crossval_elnet")
+optimal_lambdas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(optimal_lambdas) = names_of_columns
+
+for(k in ks){
+    print("Next iteration")
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    # SURE RIDGE
+    # lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # if (k == 20){
+    #     lambdas = seq(from=1.0 ,by=1.0, to=100.0)
+    # }
+    lambdas = c(2:10 %o% 10^(-5:5))
+    lambda_sure_ridge = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_ridge = coefficients(obj_ridge)
+        beta_ridge = beta_ridge[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_ridge)^2)
+        
+        lambda_2 = lambda * n
+        M = X %*% solve(t(X) %*% X + lambda_2 * diag(p)) %*% t(X)
+        sure = RSS + 2 * sigma^2 * sum(diag(M))
+        # print("-------")
+        # print(sure) 
+        # print(RSS)
+        # print(2 * sigma^2 * sum(diag(M)))
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_ridge = lambda
+        }
+    }
+    
+    # SURE LASSO
+    lambdas = seq(from=0.00001,by=0.00001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_lasso = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_lasso = coefficients(obj_lasso)
+        beta_lasso = beta_lasso[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_lasso)^2)
+        sure = RSS + 2 * sigma^2 * sum(beta_lasso != 0)
+        if (sure < best_pe){
+            best_pe = sure
+            lambda_sure_lasso = lambda
+        }
+    }
+    
+    # SURE ELASTICNET
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    # lambdas = seq(from=0.1,by=0.1, to=0.1)
+    lambda_sure_elnet = 0
+    best_pe = 10000000
+    for(lambda in lambdas){
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        #  "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio" "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs" 
+        beta_elnet = coefficients(obj_elnet)
+        beta_elnet = beta_elnet[2:(p+1),1]
+        RSS = sum((Y - X%*%beta_elnet)^2)
+        nonzero_betas_indices = which(beta_elnet != 0)
+        if (length(nonzero_betas_indices) > 0){
+            X_A = X[, nonzero_betas_indices]
+            lambda_2 = lambda * 0.5 * n
+            # Lambda_2 is the ridge part. A is the active set.
+            H = X_A %*% solve(t(X_A) %*% X_A + lambda_2 * diag(length(nonzero_betas_indices))) %*% t(X_A)
+            sure = RSS + 2 * sigma^2 * sum(diag(H))
+            if (sure < best_pe){
+                best_pe = sure
+                lambda_sure_elnet = lambda
+            }
+        }
+    }
+    
+    # CROSSVALIDATION RIDGE
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    lambdas = seq(from=0.0001,by=0.0001, to=0.01)
+    obj_cv_ridge = cv.glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, nfolds = 10, lambda=lambdas)
+    lambda_crossval_ridge = obj_cv_ridge$lambda.min
+
+    # CROSSVALIDATION LASSO
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_lasso = cv.glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_lasso = obj_cv_lasso$lambda.min
+    
+    # CROSSVALIDATION ELASTICNET
+    # lambdas<-seq(from=0.0001,by=0.01, to=1.0)
+    obj_cv_elnet = cv.glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, nfolds = 10)
+    lambda_crossval_elnet = obj_cv_elnet$lambda.min
+    
+    # SAVE OPTIMAL LAMBDAS
+    optimal_lambdas[nrow(optimal_lambdas) + 1,] = c(k, lambda_sure_ridge, lambda_sure_lasso, lambda_sure_elnet, lambda_crossval_ridge, lambda_crossval_lasso, lambda_crossval_elnet)
+}
+
+```
+
+
+
+```{r 100iterations4b, echo=F}
+set.seed(42)
+sigma = 1
+n = 1000
+p = 950
+# sigma_matrix = matrix(rep(0.5, 950*950), nrow=950)
+# diag(sigma_matrix) = 1
+# sigma_matrix = sigma_matrix / n
+# X = rmvnorm(n, rep(0, p), sigma_matrix)
+beta = c(rep(0, p))
+non_zero_beta_val = 5
+ks = c(20, 100, 200)
+
+names_of_columns = c("k", "beta_mse_sure_ridge", "beta_mse_sure_lasso", "beta_mse_sure_elnet", "beta_mse_crossval_ridge", "beta_mse_crossval_lasso",
+                     "beta_mse_crossval_elnet", "beta_mse_ols", "beta_mse_aic", "beta_mse_mbic2")
+mse_betas = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_betas) = names_of_columns
+
+names_of_columns = c("k", "mean_mse_sure_ridge", "mean_mse_sure_lasso", "mean_mse_sure_elnet", "mean_mse_crossval_ridge", "mean_mse_crossval_lasso",
+                     "mean_mse_crossval_elnet", "mean_mse_ols", "mean_mse_aic", "mean_mse_mbic2")
+mse_mean = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(mse_mean) = names_of_columns
+
+n_experiments = 100
+for(i in 1:length(ks)){
+    k = ks[i]
+    e = rnorm(n)
+    beta[1:k] = non_zero_beta_val
+    Y = X %*% beta + e
+    
+    beta_mse_sure_ridge = 0
+    beta_mse_sure_lasso = 0
+    beta_mse_sure_elnet = 0
+    beta_mse_crossval_ridge = 0
+    beta_mse_crossval_lasso = 0
+    beta_mse_crossval_elnet = 0
+    beta_mse_ols = 0
+    beta_mse_aic = 0
+    beta_mse_mbic2 = 0
+    
+    mean_mse_sure_ridge = 0
+    mean_mse_sure_lasso = 0
+    mean_mse_sure_elnet = 0
+    mean_mse_crossval_ridge = 0
+    mean_mse_crossval_lasso = 0
+    mean_mse_crossval_elnet = 0
+    mean_mse_ols = 0
+    mean_mse_aic = 0
+    mean_mse_mbic2 = 0
+    
+    # optimal_lambdas: "k", "lambda_sure_ridge", "lambda_sure_lasso", "lambda_sure_elnet", "lambda_crossval_ridge", "lambda_crossval_lasso", "lambda_crossval_elnet"
+    
+    for (i_exp in 1:n_experiments){
+        
+        # SURE RIDGE
+        lambda = optimal_lambdas[i, 2]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_ridge = beta_mse_sure_ridge + sum((beta_hat - beta)^2)
+        mean_mse_sure_ridge = mean_mse_sure_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE LASSO
+        lambda = optimal_lambdas[i, 3]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_lasso = beta_mse_sure_lasso + sum((beta_hat - beta)^2)
+        mean_mse_sure_lasso = mean_mse_sure_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # SURE ELASTICNET
+        lambda = optimal_lambdas[i, 4]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_sure_elnet = beta_mse_sure_elnet + sum((beta_hat - beta)^2)
+        mean_mse_sure_elnet = mean_mse_sure_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        #CROSSVALIDATION RIDGE
+        lambda = optimal_lambdas[i, 5]
+        obj_ridge = glmnet(X, Y, alpha=0, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_ridge)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_ridge = beta_mse_crossval_ridge + sum((beta_hat - beta)^2)
+        mean_mse_crossval_ridge = mean_mse_crossval_ridge + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION LASSO
+        lambda = optimal_lambdas[i, 6]
+        obj_lasso = glmnet(X, Y, alpha=1, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_lasso)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_lasso = beta_mse_crossval_lasso + sum((beta_hat - beta)^2)
+        mean_mse_crossval_lasso = mean_mse_crossval_lasso + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # CROSSVALIDATION ELASTICNET
+        lambda = optimal_lambdas[i, 7]
+        obj_elnet = glmnet(X, Y, alpha=0.5, intercept=FALSE, standardize=FALSE, lambda=lambda)
+        beta_hat = coefficients(obj_elnet)
+        beta_hat = beta_hat[2:(p+1),1]
+        beta_mse_crossval_elnet = beta_mse_crossval_elnet + sum((beta_hat - beta)^2)
+        mean_mse_crossval_elnet = mean_mse_crossval_elnet + sum((X%*%beta_hat - X%*%beta)^2)
+        
+        # OLS
+        beta_hat = lm(Y~X-1)$coefficients
+        beta_mse_ols = beta_mse_ols + sum((beta_hat - beta)^2)
+        mean_mse_ols = mean_mse_ols + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS AIC
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_aic = fast_forward(d, crit=aic)
+        s_obj_aic <- summary(obj_aic)
+        beta_hat <- rep(0, 950)
+        if(length(obj_aic$model) > 0){
+          beta_hat[as.numeric(obj_aic$model)] <- s_obj_aic$coefficients[-1, 1]
+        }
+        beta_mse_aic = beta_mse_aic + sum((beta_hat - beta)^2)
+        mean_mse_aic = mean_mse_aic + sum((X%*%beta_hat - X%*%beta)^2)
+
+        # OLS MBIC2
+        d=prepare_data(Y, X, verbose = FALSE)
+        obj_mbic2 = fast_forward(d, crit=mbic2)
+        s_obj_mbic2 <- summary(obj_mbic2)
+        beta_hat <- rep(0, 950)
+        if(length(obj_mbic2$model) > 0){
+          beta_hat[as.numeric(obj_mbic2$model)] <- s_obj_mbic2$coefficients[-1, 1]
+        }
+        beta_mse_mbic2 = beta_mse_mbic2 + sum((beta_hat - beta)^2)
+        mean_mse_mbic2 = mean_mse_mbic2 + sum((X%*%beta_hat - X%*%beta)^2)
+    }
+    mse_betas[nrow(mse_betas) + 1,] = c(k, beta_mse_sure_ridge/n_experiments, beta_mse_sure_lasso/n_experiments, beta_mse_sure_elnet/n_experiments, beta_mse_crossval_ridge/n_experiments, beta_mse_crossval_lasso/n_experiments, beta_mse_crossval_elnet/n_experiments, beta_mse_ols/n_experiments, beta_mse_aic/n_experiments, beta_mse_mbic2/n_experiments)
+    mse_mean[nrow(mse_mean) + 1,] = c(k, mean_mse_sure_ridge/n_experiments, mean_mse_sure_lasso/n_experiments, mean_mse_sure_elnet/n_experiments, mean_mse_crossval_ridge/n_experiments, mean_mse_crossval_lasso/n_experiments, mean_mse_crossval_elnet/n_experiments, mean_mse_ols/n_experiments, mean_mse_aic/n_experiments, mean_mse_mbic2/n_experiments)
+}
+```
+
+
+```{r mse_betas4b, echo=F}
+mse_betas
+```
+
+
+```{r mse_mean4b, echo=F}
+mse_mean
+```
+
+
+
+
+
+
+
+
+
+
+# Task 5
+```{r irrepresentability, include=F}
+set.seed(42) 
+sigma = 1
+n = 100
+p = 200
+X = matrix(rnorm(n*p, 0, 0.1), n, p)
+e = rnorm(n)
+beta = c(rep(0, p))
+non_zero_beta_val = 30
+irrepresentability_numbers = c(rep(0, 50))
+max_k = 0
+for(k in 1:50){
+    s_beta_I = matrix(1, k, 1)
+    X_I = X[, 1:k]
+    X_I_bar = X[, (k+1):p]
+    irrepresentability_vector = t(X_I_bar) %*% X_I %*% solve(t(X_I) %*% X_I) %*% s_beta_I
+    irrepresentability_number = max(irrepresentability_vector)
+    irrepresentability_numbers[k] = irrepresentability_number
+    if (irrepresentability_number <= 1){
+        max_k = k
+    }
+    
+}
+k_IR = max_k
+
+
+beta = c(rep(0, p))
+beta[1:k_IR] = non_zero_beta_val
+Y = X %*% beta + e
+```
+
+
+```{r irrepresentability2, echo=F}
+set.seed(42)
+obj<-cv.glmnet(X,Y, alpha=1)
+betacv<-coefficients(obj, s='lambda.min')[2:(p+1),1]
+lambda<-15*obj$lambda.min
+obj2<-glmnet(X,Y, alpha=1 ,lambda=lambda)
+betahat<-coefficients(obj2)[2:(p+1)]
+plot(betahat~beta)
+```
+
+
+```{r irrepresentability3, include=F}
+c(lambda, lambda * n * 0.5)
+```
+
+
+
+```{r identifiability, include=F}
+set.seed(42) 
+sigma = 1
+n = 100
+p = 200
+X = matrix(rnorm(n*p, 0, 0.1), n, p)
+e = rnorm(n)
+beta = c(rep(0, p))
+non_zero_beta_val = 30
+R = non_zero_beta_val
+irrepresentability_numbers = c(rep(0, 50))
+max_k = 0
+
+for(k in 1:99){
+    b=c(rep(R,k),rep(0,p-k))
+    Y=X%*%b
+    
+    ### X is the design matrix and Y is the response of the linear model ### 
+    BP_OLS=function(X,Y) 
+    {
+      
+      A1=diag(rep(1,p))
+      Mcontrainte=matrix(nrow=(2*p+n),ncol=5*p)
+      Mcontrainte[1:p,1:p]=A1
+      Mcontrainte[1:p,(p+1):(2*p)]=rep(0,p^2)
+      Mcontrainte[1:p,(2*p+1):(3*p)]=-A1
+      Mcontrainte[(p+1):(2*p),1:p]=rep(0,p^2)
+      Mcontrainte[(p+1):(2*p),(p+1):(2*p)]=A1
+      Mcontrainte[(p+1):(2*p),(2*p+1):(3*p)]=-A1
+      Mcontrainte[1:(2*p),(3*p+1):(5*p)]=diag(rep(1,2*p))
+      Mcontrainte[(2*p+1):(2*p+n),1:p]=X
+      Mcontrainte[(2*p+1):(2*p+n),(p+1):(2*p)]=-X
+      Mcontrainte[(2*p+1):(2*p+n),(2*p+1):(5*p)]=rep(0,(3*n*p))
+
+      foptimiser=c(rep(0,(2*p)),rep(1,p),rep(0,(2*p))) #Correspond ŕ 0*b1+...+0*bp+z1+...+zp
+
+      inegalite=rep("=",(2*p+n))
+
+      second_membre_noise=rep(0,(2*p+n))
+      second_membre=c(rep(0,2*p),Y)
+
+      s=lp ("min", foptimiser, Mcontrainte, inegalite, second_membre)$solution
+      solution=s[1:p]-s[(p+1):(2*p)]
+      Active_set_init=(1:p)[abs(solution)>0.0000000001]
+      X_sel=X[,Active_set_init]
+      Active_noise=setdiff(Active_set_init,(1:k))
+      Active_set=(1:p)[abs(solution)>4]
+      
+      Active_set=(1:p)[abs(solution)>4]
+      
+      return(Active_set)
+    }
+    
+    active_set = BP_OLS(X, Y)
+    if (length(active_set) == k){
+        if (sum((active_set - 1:k)^2) == 0){
+            max_k = k
+        }
+    }
+    # if (length(active_set) >= k){
+    #     if (sum((active_set[1:k] - 1:k)^2) == 0){
+    #         max_k = k
+    #     }
+    # }
+}
+k_ID = max_k
+
+beta = c(rep(0, p))
+beta[1:k_ID] = non_zero_beta_val
+Y = X %*% beta + e
+```
+
+
+```{r identifiability2, echo=F}
+set.seed(42)
+obj<-cv.glmnet(X,Y, alpha=1)
+betacv<-coefficients(obj, s='lambda.min')[2:(p+1),1]
+lambda <- 1*obj$lambda.min
+obj2<-glmnet(X,Y, alpha=1 ,lambda=lambda)
+betahat<-coefficients(obj2)[2:(p+1)]
+plot(betahat~beta)
+```
+
+
+```{r identifiability3, include=F}
+c(lambda, lambda * n * 0.5)
+```
+
+
+```{r identifiability4, echo=F}
+set.seed(42)
+beta = c(rep(0, p))
+beta[1:(k_ID+1)] = non_zero_beta_val
+Y = X %*% beta + e
+obj<-cv.glmnet(X,Y, alpha=1)
+betacv<-coefficients(obj, s='lambda.min')[2:(p+1),1]
+lambda <- 0.5*obj$lambda.min
+obj2<-glmnet(X,Y, alpha=1 ,lambda=lambda)
+betahat<-coefficients(obj2)[2:(p+1)]
+plot(betahat~beta)
+```
+
+# Task 6
+

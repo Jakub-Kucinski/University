@@ -1,0 +1,7 @@
+"0","names_of_columns = c(""Model"", ""optimal_parameter"", ""MSE"")"
+"0","task2 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))"
+"0","colnames(task2) = names_of_columns"
+"0",""
+"0","task2[nrow(task2) + 1,] = c(""LASSO"", min_lambda_lasso_mse, min_lasso_mse)"
+"0","task2[nrow(task2) + 1,] = c(""SLOPE"", min_alpha_slope_mse, min_slope_mse)"
+"0","task2"

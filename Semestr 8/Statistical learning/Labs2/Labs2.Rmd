@@ -1,0 +1,436 @@
+---
+title: "Lab2"
+author: "Jakub Kuciński"
+date: "15 04 2022"
+output: pdf_document
+---
+
+<!-- ric = nbic(c=sqrt(n)) -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+```{r, include=FALSE}
+library("bigstep")
+library("ggplot2")
+library("xtable")
+library("gridExtra")
+set.seed(0)
+```
+
+## Task 1
+
+```{r, echo=FALSE}
+n = 1000
+sigma = 1.0
+X = matrix(rnorm(950000, 0, 1.0/sqrt(1000)), n, 950)
+e = rnorm(n)
+beta = c(3, 3, 3, 3, 3, rep(0, 945))
+Y = X %*% beta + e
+significance = 0.1
+nvars = c(2, 5, 10, 100, 500, 950)
+nmodels = length(nvars)
+n_experiments = 500
+
+names_of_columns = c("ncols", "RSS", "PE", "PE_sigma_known", "PE_sigma_unknown", "PE_cross_valid", "AIC_sigma_known", "AIC_sigma_unknown")
+task1 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task1) = names_of_columns
+
+for (i in 1:nmodels){
+  p = nvars[i]
+  Xi = X[, 1:p]
+  reg = lm(Y~Xi -1, x = TRUE)
+
+  betahat = reg$coefficients
+  RSS = sum(summary(reg)$residuals ^ 2)
+  Y_h = Xi %*% betahat
+  true_expected_value_of_PE = sum((Xi%*%beta[1:p] - Y_h)^2) + n * sigma ** 2
+  M = Xi %*% solve(t(Xi) %*% Xi) %*% t(Xi)
+  estimate_PE_sigma_known = RSS + 2 * sum(diag(M)) * sigma ** 2
+  estimate_PE_sigma_unknown = RSS + 2 * sum(diag(M)) * (RSS / (n-p))
+  PE_leave_one_out_crossvalidation = sum((summary(reg)$residuals / (1 - diag(M)))**2)
+  aic_sigma_known = - n * log(sqrt(2 * pi)) - RSS/2 - p
+  aic_sigma_unknown = - n * log(sqrt(2 * pi)) - n/2 * log(RSS) - p
+  task1[nrow(task1) + 1,] = c(p, RSS, true_expected_value_of_PE, estimate_PE_sigma_known, estimate_PE_sigma_unknown, PE_leave_one_out_crossvalidation, aic_sigma_known, aic_sigma_unknown)
+}
+task1
+```
+
+We can see that RSS drops with increasing number of variables, however it does not correspond to creating a better model as true expected value of prediction error increases. PE estimators are quite close to the true expected PE for up to 100 variables. PE estimation for known sigma is still quite close to the true expected PE for 500 variables. Estimation with unknown sigma vary more, especially for 950 variables. Estimation of PE using leave-one-out cross-validation gives much higher value for 500 variables and of order of magnitude bigger value for 950 variables.
+
+```{r, echo=FALSE}
+string_number_of_columns = c('p=2', 'p=5', 'p=10', 'p=100', 'p=500', 'p=950')
+par(mfrow=c(1,3), mar=c(5,5,3,1), las=0, bty="n")
+plot(task1[,1], task1[,7], type="b", xlab = "Number of variables", ylab="AIC sigma known", log="x")
+plot(task1[,1], task1[,8], type="b", xlab = "Number of variables", ylab="AIC sigma unknown", log="x")
+plot(task1[,1], -task1[,4], type="b", xlab = "Number of variables", ylab="Minus PE sigma known", log="x")
+```
+
+AIC with known sigma chooses model with 5 first variables, that is it chooses model with all and only true nonzero coefficients. AIC chooses models with very high number of parameters when number of variables is close to the number of samples. We can see that on plot of AIC with unknown sigma. The AIC value for model with 950 variables is significantly higher than for smaller models. We can also see, that plots of AIC for known sigma and minus PE for known sigma are similar, as maximizing AIC for known sigma is equivalent to minimizing $RSS + 2\sigma^2p$, which is unbiased estimator of the prediction error in least squares regression.
+
+
+```{r, echo=FALSE}
+n = 1000
+sigma = 1.0
+beta = c(3, 3, 3, 3, 3, rep(0, 945))
+significance = 0.1
+nvars = c(2, 5, 10, 100, 500, 950)
+nmodels = length(nvars)
+n_experiments = 100
+
+task2 = array(dim=c(n_experiments, 6, 11))
+for (i_exp in 1:n_experiments){
+  X = matrix(rnorm(950000, 0, 1.0/sqrt(1000)), n, 950)
+  e = rnorm(n)
+  Y = X %*% beta + e
+  for (i in 1:nmodels){
+    p = nvars[i]
+    Xi = X[, 1:p]
+    reg = lm(Y~Xi -1, x = TRUE)
+  
+    betahat = reg$coefficients
+    RSS = sum(summary(reg)$residuals ^ 2)
+    Y_h = Xi %*% betahat
+    true_expected_value_of_PE = sum((Xi%*%beta[1:p] - Y_h)^2) + n * sigma ** 2
+    
+    M = Xi %*% solve(t(Xi) %*% Xi) %*% t(Xi)
+    estimate_PE_sigma_known = RSS + 2 * sum(diag(M)) * sigma ** 2
+    estimate_PE_sigma_unknown = RSS + 2 * sum(diag(M)) * (RSS / (n-p))
+    PE_leave_one_out_crossvalidation = sum((summary(reg)$residuals / (1 - diag(M)))**2)
+
+    aic_sigma_known = - n * log(sqrt(2 * pi)) - RSS/2 - p
+    aic_sigma_unknown = - n * log(sqrt(2 * pi)) - n/2 * log(RSS) - p
+    
+    FP_sigma_known = sum(abs(betahat) > sqrt(2) & !(beta != 0)[1:p])
+    FN_sigma_known = sum(!(abs(betahat) > sqrt(2)) & (beta != 0)[1:p])
+    FP_sigma_unknown = sum(abs(betahat) > sqrt(RSS/(n-p)*2) & !(beta != 0)[1:p])
+    FN_sigma_unknown = sum(!(abs(betahat) > sqrt(RSS/(n-p)*2)) & (beta != 0)[1:p])
+  
+    task2[i_exp,i,] = c(RSS, true_expected_value_of_PE, estimate_PE_sigma_known, estimate_PE_sigma_unknown, PE_leave_one_out_crossvalidation, aic_sigma_known, aic_sigma_unknown, FP_sigma_known, FN_sigma_known, FP_sigma_unknown, FN_sigma_unknown)
+  }
+}
+```
+
+
+
+```{r, echo=FALSE}
+string_number_of_columns = c('p=2', 'p=5', 'p=10', 'p=100', 'p=500', 'p=950')
+boxplot(task2[,,3] - task2[,,2],
+        use.cols = T,
+        names=string_number_of_columns,
+        ylab='Est PE sigma known - PE',
+        main='Boxplots of difference between PE and it\'s first estimator')
+boxplot(task2[,,4] - task2[,,2],
+        use.cols = T,
+        names=string_number_of_columns,
+        ylab='Est PE sigma unknown - PE',
+        main='Boxplots of difference between PE and it\'s second estimator')
+boxplot(task2[,,5] - task2[,,2],
+        use.cols = T,
+        names=string_number_of_columns,
+        ylab='Est PE leave one out - PE',
+        main='Boxplots of difference between PE and it\'s third estimator')
+```
+
+After 100 simulations we can look at the boxplots of differences of estimations of PE and its true expected value. For estimator with known sigma we can see, that differences are around zero and the standard deviation of differences are similar for all models. Differences of estimator with unknown sigma and true expected PE and estimator deviates more with increase of model size. For leave-one-out crossvalidation, the differences of the true expected PE and the estimator are getting big and deviates even more with increase of model size.
+
+
+```{r, echo=FALSE}
+names_of_columns = c("ncols", "FP_sigma_known", "FN_sigma_known", "FP_sigma_unknown", "FN_sigma_unknown")
+aux_task2 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(aux_task2) = names_of_columns
+for (i in 1:nmodels){
+  p = nvars[i]
+  FP_sigma_known = mean(task2[,i,8])
+  FN_sigma_known = mean(task2[,i,9])
+  FP_sigma_unknown = mean(task2[,i,10])
+  FN_sigma_unknown = mean(task2[,i,11])
+  aux_task2[nrow(aux_task2) + 1,] = c(toString(p), FP_sigma_known, FN_sigma_known, FP_sigma_unknown, FN_sigma_unknown)
+}
+aux_task2[, c(1:5)] <- sapply(aux_task2[, c(1:5)], as.numeric)
+aux_task2$ncols = factor(aux_task2$ncols, levels = aux_task2$ncols)
+p1 = ggplot(aux_task2, aes(x=ncols, y=FP_sigma_known)) + 
+  geom_bar(stat = "identity") + geom_col()
+p2 = ggplot(aux_task2, aes(x=ncols, y=FP_sigma_unknown)) + 
+  geom_bar(stat = "identity") + geom_col()
+p3 = ggplot(aux_task2, aes(x=ncols, y=FN_sigma_known)) + 
+  geom_bar(stat = "identity") + geom_col()
+p4 = ggplot(aux_task2, aes(x=ncols, y=FN_sigma_unknown)) + 
+  geom_bar(stat = "identity") + geom_col()
+# grid.arrange(p1, p2, p3, p4, nrow = 2)
+
+names_of_columns = c("ncols", "FP_sigma_known", "FN_sigma_known", "FP_sigma_unknown", "FN_sigma_unknown")
+aux_task2 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(aux_task2) = names_of_columns
+for (i in 1:3){
+  p = nvars[i]
+  FP_sigma_known = mean(task2[,i,8])
+  FN_sigma_known = mean(task2[,i,9])
+  FP_sigma_unknown = mean(task2[,i,10])
+  FN_sigma_unknown = mean(task2[,i,11])
+  aux_task2[nrow(aux_task2) + 1,] = c(toString(p), FP_sigma_known, FN_sigma_known, FP_sigma_unknown, FN_sigma_unknown)
+}
+aux_task2[, c(1:5)] <- sapply(aux_task2[, c(1:5)], as.numeric)
+aux_task2$ncols = factor(aux_task2$ncols, levels = aux_task2$ncols)
+p5 = ggplot(aux_task2, aes(x=ncols, y=FP_sigma_known)) +
+  geom_bar(stat = "identity") + geom_col()
+p6 = ggplot(aux_task2, aes(x=ncols, y=FP_sigma_unknown)) +
+  geom_bar(stat = "identity") + geom_col()
+
+grid.arrange(p5, p1, p6, p2, p3, p4, nrow = 2)
+```
+
+
+We can also look at the average number of FP and FN produced by AIC with known and unknown sigma for different model sizes. Of course for models with 2 and 5 first variables AIC can't produce FP (5 first variables have true non-zero coefficients). For model with 10 variables on average it is less than 1, but we can see, that number of FP for bigger models is getting very big. Average number of FN is below 1 for all models and grows with number of consider variables. We can conclude, that AIC is not a good selection criteria if we are interested in selecting small subset of relevant variables from big set containing many irrelevant variables. 
+
+
+<!-- # ```{r, echo=FALSE} -->
+<!-- # for (i in 1:nmodels){ -->
+<!-- #   par(mfrow=c(2,2), mar=c(5,5,3,1), las=0, bty="n") -->
+<!-- #   hist(task2[,i,8], xlab = "FP_sigma_known", main=paste('Histogram for',  toString(nvars[i]), 'variables')) -->
+<!-- #   hist(task2[,i,9], xlab = "FN_sigma_known", main=paste('Histogram for',  toString(nvars[i]), 'variables')) -->
+<!-- #   hist(task2[,i,10], xlab = "FP_sigma_unknown", main=paste('Histogram for',  toString(nvars[i]), 'variables')) -->
+<!-- #   hist(task2[,i,11], xlab = "FN_sigma_unknown", main=paste('Histogram for',  toString(nvars[i]), 'variables')) -->
+<!-- # } -->
+<!-- # ``` -->
+
+```{r, echo=FALSE}
+par(mfrow=c(1,2), mar=c(5,5,3,1), las=0, bty="n")
+hist(task2[,6,9], xlab = "FN_sigma_known", main=paste('Histogram for',  toString(nvars[6]), 'variables'))
+hist(task2[,6,11], xlab = "FN_sigma_unknown", main=paste('Histogram for',  toString(nvars[6]), 'variables'))
+
+par(mfrow=c(1,2), mar=c(5,5,3,1), las=0, bty="n")
+hist(task2[,5,8], xlab = "FP_sigma_known", main=paste('Histogram for',  toString(nvars[5]), 'variables'))
+hist(task2[,5,10], xlab = "FP_sigma_unknown", main=paste('Histogram for',  toString(nvars[5]), 'variables'))
+```
+
+We can also have a look at selected histograms of the number of false negatives and false positives produced by both versions of AIC. We can see, that histograms with known and unknown sigmas of the number of FP and FN are very similar.
+
+
+
+
+
+
+
+## Task2
+For all of the simulations I used fast forward, because step-wise was taking very long on my machine.
+
+```{r, include=FALSE}
+ric = function(loglik, k, n, p){
+  mbic(loglik, k, n, p, const=sqrt(n))
+}
+
+ric = function(loglik, k, p){2*k*log(p) - 2*loglik}
+
+compute_stats = function(obtained_model, real_betas){
+  FD = sum(as.integer(obtained_model$model) > 5)
+  TD = sum(as.integer(obtained_model$model) <= 5)
+  SE = mean((obtained_model$X %*% real_betas - obtained_model$Xm %*% summary(obtained_model)$coefficients[,1])^2)
+  pow = TD/5
+  c(FD, TD, pow, SE)
+}
+
+fdr = function (truedisc, falsedisc){
+  all_disc = truedisc + falsedisc
+  all_disc[all_disc == 0] = 1
+  fdp = falsedisc / all_disc
+  mean(fdp)
+}
+```
+
+
+```{r, include=FALSE}
+n = 1000
+sigma = 1.0
+beta = c(3, 3, 3, 3, 3, rep(0, 945))
+X = matrix(rnorm(950000, 0, 1.0/sqrt(1000)), n, 950)
+e = rnorm(n)
+Y = X %*% beta + e
+significance = 0.1
+nvars = c(20, 100, 500, 950)
+nmodels = length(nvars)
+n_experiments = 100
+
+names_of_columns = c("ncols", "criterion", "FD", "TD", "SE")
+task3 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task3) = names_of_columns
+
+criteria = list(ric, bic, aic, mbic, mbic2)
+criteria_strings = c("ric", "bic", "aic", "mbic", "mbic2")
+
+for (i in 1:nmodels){
+  p = nvars[i]
+  Xi = X[, 1:p]
+  for (j in 1:length(criteria)){
+    d=prepare_data(Y, Xi, verbose = FALSE)
+    model = fast_forward(d, crit=criteria[[j]])
+    result = compute_stats(model, beta[1:p])
+    FD = result[1]
+    TD = result[2]
+    pow = result[3]
+    SE = result[4]
+    task3[nrow(task3) + 1,] = c(p, criteria_strings[j], FD, TD, SE)
+  }
+}
+
+task3
+```
+
+```{r, include=FALSE}
+task3[, c(1, 3:5)] <- sapply(task3[, c(1, 3:5)], as.numeric)
+task3$ncols = factor(task3$ncols)
+```
+
+```{r, echo=FALSE, fig.width=8, fig.height=6}
+# t1 = ggplot(task3, aes(x=ncols, y=FD)) + geom_col()
+# f1 = t1 + facet_grid(cols=vars(criterion))
+# t2 = ggplot(task3, aes(x=ncols, y=TD)) + geom_col()
+# f2 = t2 + facet_grid(cols=vars(criterion))
+# t3 = ggplot(task3, aes(x=ncols, y=SE)) + geom_col()
+# f3 = t3 + facet_grid(cols=vars(criterion))
+# grid.arrange(f1, f2, f3, nrow = 3)
+
+t1 = ggplot(task3, aes(x=criterion, y=FD)) + geom_col()
+f1 = t1 + facet_grid(cols=vars(ncols))
+t2 = ggplot(task3, aes(x=criterion, y=TD)) + geom_col()
+f2 = t2 + facet_grid(cols=vars(ncols))
+t3 = ggplot(task3, aes(x=criterion, y=SE)) + geom_col()
+f3 = t3 + facet_grid(cols=vars(ncols))
+grid.arrange(f1, f2, f3, nrow = 3)
+# ggsave(
+#   "unnamed-chunk-11-1.pdf",
+#   plot = last_plot(), path ="Labs2_files/figure-latex/")
+```
+
+Looking at the plot we can see that AIC made the most TD, but it also made far the most FD and had very big square error. BIC had similar number of TD but also did some FD. Its SE was much lower than AIC. RIC had the smallest SE for bigger data, third best TD and no FD. mBIC and mBIC2 did less TD, no FD and they also had higher SE then RIC.
+
+
+```{r, echo=FALSE}
+n = 1000
+sigma = 1.0
+beta = c(3, 3, 3, 3, 3, rep(0, 945))
+
+significance = 0.1
+nvars = c(20, 100, 500, 950)
+nmodels = length(nvars)
+n_experiments = 100
+
+names_of_columns = c("ncols", "criterion", "FD", "TD", "power", "FDR", "SE")
+task4 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task4) = names_of_columns
+
+criteria = list(ric, bic, aic, mbic, mbic2)
+criteria_strings = c("ric", "bic", "aic", "mbic", "mbic2")
+
+
+for (i in 1:nmodels){
+  p = nvars[i]
+  for (j in 1:length(criteria)){
+    truedisc = matrix(0, n_experiments)
+    falsedisc = matrix(0, n_experiments)
+    power = matrix(0, n_experiments)
+    se = matrix(0, n_experiments)
+    for (i_exp in 1:n_experiments){
+      X = matrix(rnorm(950000, 0, 1.0/sqrt(1000)), n, 950)
+      e = rnorm(n)
+      Y = X %*% beta + e
+      Xi = X[, 1:p]
+      d=prepare_data(Y,Xi, verbose = FALSE)
+      model = fast_forward(d, crit=criteria[[j]])
+      result = compute_stats(model, beta[1:p])
+      FD = result[1]
+      TD = result[2]
+      pow = result[3]
+      SE = result[4]
+      truedisc[i_exp] = TD
+      falsedisc[i_exp] = FD
+      power[i_exp] = pow
+      se[i_exp] = SE
+    }
+    task4[nrow(task4) + 1,] = c(p, criteria_strings[j], mean(falsedisc), mean(truedisc), mean(power), fdr(truedisc, falsedisc), mean(se))
+  }
+}
+task4
+```
+
+```{r, include=FALSE}
+task4[, c(1, 3:7)] <- sapply(task4[, c(1, 3:7)], as.numeric)
+task4$ncols = factor(task4$ncols)
+```
+
+```{r, echo=FALSE, fig.width=8, fig.height=8}
+t1 = ggplot(task4, aes(x=criterion, y=FD)) + geom_col()
+f1 = t1 + facet_grid(cols=vars(ncols))
+t2 = ggplot(task4, aes(x=criterion, y=TD)) + geom_col()
+f2 = t2 + facet_grid(cols=vars(ncols))
+t3 = ggplot(task4, aes(x=criterion, y=power)) + geom_col()
+f3 = t3 + facet_grid(cols=vars(ncols))
+t4 = ggplot(task4, aes(x=criterion, y=FDR)) + geom_col()
+f4 = t4 + facet_grid(cols=vars(ncols))
+t5 = ggplot(task4, aes(x=criterion, y=SE)) + geom_col()
+f5 = t5 + facet_grid(cols=vars(ncols))
+grid.arrange(f1, f2, f3, f4, f5, nrow = 5)
+```
+
+By looking at the table and plot after 100 simulations (pasted above) we can see similar behaviors. AIC makes the most TD, but also does a lot of FD and thus has high power, but also very high FDR. It has also high SE for bigger models. BIC behaves similarly to AIC, but has smaller number of TD and FD and therefore smaller power, but also smaller FDR. mBIC, mBIC2 and RIC do very little FD (on average less than 0.32 with RIC making a bit more than mBIC and mBIC2). RIC do more TD than mBIC and mBIC2, especially for bigger data, however much less than AIC and BIC. RIC has bigger power and FDR than mBIC and mBIC2, but smaller than AIC and BIC. However RIC achieves the best SE for data base with very high number of variables (500 and 950). Therefore we can consider RIC as being the best criterion (among examined ones) for choosing important covariates in data sets with very high number of irrelevant variables, as it does very little FD (just a little more than mBIC and mBIC2, so has low FDR), achieves the best SE and has reasonable power.
+
+
+# Task 3
+
+```{r, echo=FALSE}
+measure = function(model, X_train, Y_train, X_test, Y_test){
+  beta_hat = summary(model)$coefficients[,1]
+  SE_train = mean((data.matrix(Y_train) - data.matrix(cbind(rep(1, dim(X_train)[1]), X_train[model$model])) %*% beta_hat)^2)
+  SE_test = mean((data.matrix(Y_test) - data.matrix(cbind(rep(1, dim(X_test)[1]), X_test[model$model])) %*% beta_hat)^2)
+  c(SE_train, SE_test)
+}
+
+names_of_columns = c("Criterion", "No. selected vars", "Train MSE", "Test MSE")
+task5 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task5) = names_of_columns
+
+criteria = list(ric, bic, aic, mbic, mbic2)
+criteria_strings = c("ric", "bic", "aic", "mbic", "mbic2")
+
+realdata = get(load("/cloud/project/realdata.Rdata"))
+nrows = dim(realdata)[1]
+ncols = dim(realdata)[2]
+
+train_ind = sample(seq_len(nrows), size=180)
+train = realdata[train_ind, ]
+test = realdata[-train_ind, ]
+Y_train = train[,1]
+Y_train = matrix(Y_train, ncol=1)
+Y_test = test[,1]
+Y_test = matrix(Y_test, ncol=1)
+X_train = train[,2:3221]
+X_test = test[,2:3221]
+
+Y_train = data.frame(Y_train)
+X_train = data.frame(X_train)
+Y_test = data.frame(Y_test)
+X_test = data.frame(X_test)
+
+for (i in 1:length(criteria)){
+  data = prepare_data(Y_train, X_train, verbose=FALSE)
+  result_model = fast_forward(data, crit=criteria[[i]])
+  measurements = measure(result_model, X_train, Y_train, X_test, Y_test)
+  task5[nrow(task5) + 1,] = c(criteria_strings[i], length(result_model$model), measurements[1], measurements[2])
+}
+task5
+```
+
+From simulation we can see, that AIC and BIC chose 70 variables and achieve much smaller train MSE than RIC, mBIC and mBIC2, which chose around 8 variables. However we can see, that AIC and BIC did overfit to the training data, as test MSE is much higher than train MSE and actually higher than test MSE for the RIC, mBIC and mBIC2. On test dataset RIC achieved the best MSE so it was the best criterion for choosing variables, which is in line with the theory, as RIC was designed to identify important variables for datasets with very high number of variables (even higher than number of observations).
+
+
+
+
+
+
+
+
+
+
+
+

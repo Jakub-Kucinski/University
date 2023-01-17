@@ -1,0 +1,1 @@
+"0","plot(task1[,1], task1[,8], type=""b"", xlab = ""Number of variables"", ylab=""AIC sigma unknown"", log=""x"")"

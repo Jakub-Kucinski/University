@@ -1,0 +1,7 @@
+"0","names_of_columns = c(""Model"", ""optimal_lambda"", ""MSE"", ""TD"", ""FD"")"
+"0","task1 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))"
+"0","colnames(task1) = names_of_columns"
+"0",""
+"0","task1[nrow(task1) + 1,] = c(""LASSO"", min_lambda_lasso_mse, min_lasso_mse, TD_lasso, FD_lasso)"
+"0","task1[nrow(task1) + 1,] = c(""adaptive LASSO"", min_lambda_adaptive_lasso_mse, min_adaptive_lasso_mse, TD_lasso_adaptive, FD_lasso_adaptive)"
+"0","task1"

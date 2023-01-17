@@ -1,0 +1,316 @@
+---
+title: "Labs4"
+author: "Jakub Kuciński"
+date: '2022-06-10'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries, include=F}
+library(lpSolve)
+library(Rcpp)
+library(glmnet)
+library(pracma)
+library(mvtnorm)
+library(SLOPE)
+library('glasso')
+```
+
+
+```{r, include=F}
+gen_beta <- function(k, val = 20, p = 200){
+  beta <- rep(0, p)
+  beta[1:k] <- val
+  return(beta)
+}
+```
+
+
+```{r, include=F}
+check_id_con <- function(X, max_k, p = 200, val = 20){
+  success <- rep(0,100)
+  beta <- rep(0, p)
+  
+  obj<-rep(1,2*p);
+  constmat1 <- cbind(X,-X);
+  constmat2 <- cbind(diag(p),matrix(rep(0,p*p),nrow=p));
+  constmat3 <- cbind(matrix(rep(0,p*p),nrow=p),diag(p));
+  constmat <- rbind(constmat1,constmat2,constmat3);
+  consteq <- c(rep('=',n),rep('>=',2*p));
+  
+  for (k in 1:max_k){
+    beta <- gen_beta(k, val = 20, p = p)
+    Yn <- X%*%beta
+    constright <- c(Yn,rep(0,2*p));
+    wyn1 <- lp('min',obj,constmat,consteq,constright);
+    wyn <- wyn1$solution[1:p]-wyn1$solution[(p+1):(2*p)];
+    success[k] <- (max(abs(wyn-beta))<1E-7)
+  }
+  return(max(which(success==1)))
+}
+```
+
+
+
+
+
+# Task 1
+
+```{r task1, include=F}
+n <- 100
+p <- 200
+set.seed(2022)
+X <- matrix(rnorm(n * p, 0, 0.1), n, p)
+(k_id <- check_id_con(X, 100, val = 20, p = p))
+
+beta <- gen_beta(k_id, val = 20, p = p)
+Y <- X%*%beta + rnorm(n)
+```
+
+Found maximal k for which the LASSO identifiability condition is satisfied was equal to `r k_id`.
+
+
+```{r task1a, echo=F}
+obj<-cv.glmnet(X,Y);
+lambda_min = obj$lambda.min
+lambda_vec <- seq(from = lambda_min/15, to = lambda_min, by = 0.001)
+# lambda_vec <- logspace(-5, -1, n=100)
+res <- matrix(0, length(lambda_vec), 2)
+res[,1] <- lambda_vec
+
+for(i in 1:length(lambda_vec)){
+  obj <- glmnet(X, Y, alpha = 1, lambda = lambda_vec[i])
+  coef <- coefficients(obj)[2:(p+1),1]
+  res[i,2] <- sum((X%*%(coef - beta))^2)
+}
+
+min_lambda_lasso_mse <- res[which.min(res[,2]),1]
+
+obj <- glmnet(X, Y, alpha = 1, lambda = min_lambda_lasso_mse)
+coef <- coefficients(obj)[2:(p+1),1]
+min_lasso_mse <- sum((X%*%(coef - beta))^2)
+
+# print(min_lambda_lasso_mse)
+# print(min_lasso_mse)
+plot(res[,2]~res[,1], log='x', main="LASSO MSE for different values of lambda")
+```
+
+
+```{r task1b, include=F}
+obj<-glmnet(X,Y,lambda=min_lambda_lasso_mse);
+betaL<-coefficients(obj)[2:(p+1)];
+FD_lasso = sum(betaL[(k_id+1):length(betaL)] != 0)
+TD_lasso = sum(betaL[1:k_id] != 0)
+print(TD_lasso)
+print(FD_lasso)
+```
+
+
+```{r task1c, echo=F} 
+W2<-abs(betaL)+0.000001;
+Xtemp<-sweep(X,2,W2,'*');
+
+obj3=cv.glmnet(Xtemp,Y,intercept=FALSE,standardize=FALSE);
+
+lambda_min = obj3$lambda.min
+lambda_vec <- seq(from = lambda_min/100, to = lambda_min/3, by = 0.0001)
+res2 <- matrix(0, length(lambda_vec), 2)
+res2[,1] <- lambda_vec
+
+for(i in 1:length(lambda_vec)){
+  obj <- glmnet(Xtemp, Y, alpha = 1, lambda = lambda_vec[i], intercept=FALSE, standardize=FALSE)
+  betaadcv<-coefficients(obj)[2:(p+1),1];
+  betahatad=betaadcv * W2;
+  res2[i,2] <- sum((X%*%(betahatad - beta))^2)
+}
+
+min_lambda_adaptive_lasso_mse <- res2[which.min(res2[,2]),1]
+
+obj <- glmnet(Xtemp, Y, alpha = 1, lambda = min_lambda_adaptive_lasso_mse, intercept=FALSE, standardize=FALSE)
+betaadcv<-coefficients(obj)[2:(p+1),1];
+betahatad=betaadcv * W2;
+min_adaptive_lasso_mse <- sum((X%*%(betahatad - beta))^2)
+
+# print(min_lambda_adaptive_lasso_mse)
+# print(min_adaptive_lasso_mse)
+plot(res2[,2]~res2[,1], log='x', main="Adaptive LASSO MSE for different values of lambda")
+```
+
+```{r task1d, include=F}
+betaL_addaptive = betahatad
+FD_lasso_adaptive = sum(betaL_addaptive[(k_id+1):length(betaL_addaptive)] != 0)
+TD_lasso_adaptive = sum(betaL_addaptive[1:k_id] != 0)
+print(TD_lasso_adaptive)
+print(FD_lasso_adaptive)
+```
+
+Two plots above shows values of MSE for different values of parameter.
+
+```{r task1summary, echo=F}
+names_of_columns = c("Model", "optimal_lambda", "MSE", "TD", "FD")
+task1 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task1) = names_of_columns
+
+task1[nrow(task1) + 1,] = c("LASSO", min_lambda_lasso_mse, min_lasso_mse, TD_lasso, FD_lasso)
+task1[nrow(task1) + 1,] = c("adaptive LASSO", min_lambda_adaptive_lasso_mse, min_adaptive_lasso_mse, TD_lasso_adaptive, FD_lasso_adaptive)
+task1
+```
+
+We can see that adaptive LASSO achieved smaller MSE than usual LASSO. Both models discovered all of the true non-zero variables, but LASSO made much more false discoveries than adaptive LASSO - 68 compared to 31.
+
+
+
+
+# Task 2
+
+```{r task2, echo=F}
+n=100;
+p=150;
+k=50;
+
+set.seed(2022)
+
+rho=0.8;
+sigma <- matrix(rho,p,p) 
+diag(sigma) <- 1
+sigma<-sigma;
+X <- (rmvnorm(n,numeric(p),sigma))
+
+beta<-rep(0,p);
+beta[1:k]<-50;
+
+Y=X%*%beta+rnorm(n);
+```
+
+
+```{r task2lasso, echo=F}
+obj<-cv.glmnet(X,Y);
+lambda_min = obj$lambda.min
+# lambda_vec <- seq(from = lambda_min/1500, to = lambda_min/100, by = 0.001)
+lambda_vec <- logspace(log10(lambda_min)-4, log10(lambda_min)+0.25, n=100)
+res <- matrix(0, length(lambda_vec), 2)
+res[,1] <- lambda_vec
+
+for(i in 1:length(lambda_vec)){
+  obj <- glmnet(X, Y, alpha = 1, lambda = lambda_vec[i])
+  coef <- coefficients(obj)[2:(p+1),1]
+  res[i,2] <- sum((X%*%(coef - beta))^2)
+}
+
+min_lambda_lasso_mse <- res[which.min(res[,2]),1]
+
+obj <- glmnet(X, Y, alpha = 1, lambda = min_lambda_lasso_mse)
+coef <- coefficients(obj)[2:(p+1),1]
+min_lasso_mse <- sum((X%*%(coef - beta))^2)
+
+# print(min_lambda_lasso_mse)
+# print(min_lasso_mse)
+plot(res[,2]~res[,1], log='x', main="LASSO MSE for different values of lambda")
+```
+
+
+```{r task2slope, echo=F}
+# lambda_vec <- seq(from = lambda_min/1500, to = lambda_min/100, by = 0.001)
+alpha_vec <- logspace(-4, -1, n=100)
+res <- matrix(0, length(alpha_vec), 2)
+res[,1] <- alpha_vec
+
+for(i in 1:length(alpha_vec)){
+    obj3<-SLOPE(X,Y,intercept=FALSE, lambda='bh', q=0.2, scale='none', center=FALSE, alpha=alpha_vec[i], solver='admm');
+  betaslope<-obj3$coefficients;
+  res[i,2] <- sum((X%*%(betaslope - beta))^2)
+}
+
+min_alpha_slope_mse <- res[which.min(res[,2]),1]
+
+obj3<-SLOPE(X,Y,intercept=FALSE, lambda='bh', q=0.8, scale='none', center=FALSE, alpha=min_alpha_slope_mse, solver='admm');
+betaslope<-obj3$coefficients;
+min_slope_mse <- sum((X%*%(betaslope - beta))^2)
+
+# print(min_alpha_slope_mse)
+# print(min_slope_mse)
+plot(res[,2]~res[,1], log='x', main="SLOPE MSE for different values of alpha")
+```
+
+
+```{r task2summary, echo=F}
+names_of_columns = c("Model", "optimal_parameter", "MSE")
+task2 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task2) = names_of_columns
+
+task2[nrow(task2) + 1,] = c("LASSO", min_lambda_lasso_mse, min_lasso_mse)
+task2[nrow(task2) + 1,] = c("SLOPE", min_alpha_slope_mse, min_slope_mse)
+task2
+```
+
+From table above we can see, that SLOPE performs much better in terms of MSE when data is highly correlated than the LASSO does.
+
+
+
+
+# Task 3
+
+```{r task3, include=F}
+rho=0.7;
+sigma <- matrix(rho,10,10) 
+diag(sigma) <- 1
+
+zeros<-matrix(rep(0,10*10),nrow=10);
+Sigma1<-cbind(sigma,zeros,zeros);
+Sigma2<-cbind(zeros,sigma,zeros);
+Sigma3<-cbind(zeros,zeros,sigma);
+Sigma<-rbind(Sigma1,Sigma2,Sigma3);
+
+n<-100;
+set.seed(2022)
+X <- (rmvnorm(n,numeric(30),Sigma))
+```
+
+
+```{r task3inversecov, include=F}
+Omega<-solve(Sigma);
+S=t(X)%*%X/n;
+P<-solve(S);
+MSEinversecov<-sum((Omega-P)^2);
+```
+
+
+```{r task3glasso, echo=F}
+rho_vec <- logspace(-4, 0, n=100)
+res <- matrix(0, length(rho_vec), 2)
+res[,1] <- rho_vec
+
+for(i in 1:length(rho_vec)){
+    wyn<-glasso(S,rho=rho_vec[i]);
+    res[i,2] <- sum((Omega-wyn$wi)^2)
+}
+
+min_rho_glasso_mse <- res[which.min(res[,2]),1]
+
+wyn<-glasso(S,rho=min_rho_glasso_mse);
+MSEglasso<-sum((Omega-wyn$wi)^2)
+
+# print(min_alpha_slope_mse)
+# print(min_slope_mse)
+plot(res[,2]~res[,1], log='x', main="gLASSO MSE for different values of rho")
+```
+
+
+```{r task3summary, echo=F}
+names_of_columns = c("Model", "MSE")
+task3 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))
+colnames(task3) = names_of_columns
+
+task3[nrow(task3) + 1,] = c("InverseSampleCov", MSEinversecov)
+task3[nrow(task3) + 1,] = c("gLASSO", MSEglasso)
+task3
+```
+
+
+As expected gLASSO does much better than simple inverse of the sample covariance matrix as it is designed to not make false edges between separate components of graph.
+
+

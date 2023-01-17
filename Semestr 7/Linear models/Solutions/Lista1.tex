@@ -1,0 +1,90 @@
+\documentclass{article}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+% \usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage{amsmath}
+\usepackage[nobiblatex]{xurl}
+\usepackage{wrapfig}
+
+
+\newcommand{\tylda}{\raisebox{0.5ex}{\texttildelow}}
+
+
+\title{Modele Liniowe - Lista 1}
+\author{Jakub Kuciński 309881}
+\date{Październik 2021}
+
+\begin{document}
+
+\maketitle
+
+% \tableofcontents
+
+\section{Zadanie 1}
+\begin{figure}[htbp]
+  \centering
+  \includesvg[scale=0.6]{TwoDimensionalNormalStandard.svg}
+  \caption{Sto wektorów pochodzących z dwuwymiarowego rozkładu normalnego~$N(0,I)$.}
+  \label{fig:rozklad-dwuwymiarowy-standardowy}
+\end{figure}
+Zadanie polega na wygenerowaniu 100 losowych wektorów z dwuwymiarowego rozkładu normalnego $N(0,I)$ przy użyciu funkcji \textit{rnorm} i przedstawieniu ich na wykresie. Funkcja \textit{rnorm} pozwala na generowanie zmiennych wyłącznie z jednowymiarowego rozkładu normalnego. Zauważmy jednak, że skoro macierz wariancji-kowariancji jest w naszym zadaniu macierzą identycznościową, to wariancja poszczególnych zmiennych jest równa 1, a ich kowariancja 0. Korzystając z faktu, że kowariancja zmiennych losowych z rozkładów normalnych jest równa zeru wtedy i tylko wtedy, gdy zmienne są niezależne, możemy niezależnie losować wartości dla poszczególnych zmiennych, czyli współrzędnych wektora. Dodatkowo skoro generowanie poszczególnych wektorów jest niezależne, to wystarczy wylosować 200 wartości z jednowymiarowego rozkładu normalnego $N(0, 1)$. 
+
+Wykres otrzymanych w ten sposób wektorów znajduje się na rysunku~\ref{fig:rozklad-dwuwymiarowy-standardowy}. Widzimy, że środek chmury punktów znajduje się w okolicy punktu $(0, 0)$, co jest zgodne ze średnią rozkładu $N(0, I)$. Widzimy też, że największe zagęszczenie punktów ma miejsce w $[-1, 1] \times [-1, 1]$, im dalej od środka tym jest mniejsze i najrzadsze w rogach wykresu, gdzie odchylenia od średniej są największe. Jest to zachowanie zgodne z rozkładem $N(0, I)$.
+
+\section{Zadanie 2}
+Wiemy, że wektory X z poprzedniego zadania pochodzą z rozkładu $N_x(0, I)$. Wiemy również, że dla danej macierzy $A$ i wektora $B$ zmienna $Y = AX + B$ pochodzi z rozkładu normalnego $N_y(\mu_Y, \Sigma_Y)$, gdzie $\mu_Y = A\mu_X + B = A \cdot 0 + B = B$ oraz $\Sigma_Y = A\Sigma_X A^T = A I A^T = AA^T$. Zatem w miejsce B wystarczy użyć $\mu_Y$, a macierz $A$ można wyznaczyć z rozkładu Choleskiego macierzy $\Sigma_Y$. Wektory z rozkładu $N_y(\mu_Y, \Sigma_Y)$ zostały wytworzone przez zastosowanie przekształcenia liniowego $Y = AX + B$ na wektorach wylosowanych z rozkładu $N_x(0, I)$ z poprzedniego zadania.
+
+\begin{figure}[htbp]
+  \centering
+  \includesvg[scale=0.6]{NormalA.svg}
+  \caption{$\mu = \begin{pmatrix}
+4\\
+2
+\end{pmatrix}, \Sigma = \begin{pmatrix}
+1 & 0.9 \\
+0.9 & 1
+\end{pmatrix}$}
+  \label{fig:NormalA}
+\end{figure}
+
+Na rysunku \ref{fig:NormalA} zgodnie z oczekiwaniem średnia współrzędnych punktów znajduje się w okolicach punktu $(4,2)$. Widzimy też, że duża wartość dla jednej współrzędnej koreluje z dużą wartością dla drugiej, co jest zgodne z wysoką korelacją tych zmiennych (macierz $\Sigma$). Rozrzut punktów wzdłuż poszczególnych osi jest podobny co zgadza się z jednakową wariancją tych zmiennych.
+
+\begin{figure}[htbp]
+  \centering
+  \includesvg[scale=0.6]{NormalB.svg}
+  \caption{$\mu = \begin{pmatrix}
+4\\
+2
+\end{pmatrix}, \Sigma = \begin{pmatrix}
+1 & -0.9 \\
+-0.9 & 1
+\end{pmatrix}$}
+  \label{fig:NormalB}
+\end{figure}
+Wnioski co do odchyleń punktów i ich średniej dla rysunku \ref{fig:NormalB} są analogiczne jak dla rysunku \ref{fig:NormalA}. Widzimy też, że wyższa wartość dla jednej zmiennej koreluje z niższą wartością drugiej zmiennej, co jest zgodne z ich wysoce negatywną korelacją (macierz $\Sigma$).
+
+
+\begin{figure}[htbp]
+  \centering
+  \includesvg[scale=0.6]{NormalC.svg}
+  \caption{$\mu = \begin{pmatrix}
+4\\
+2
+\end{pmatrix}, \Sigma = \begin{pmatrix}
+9 & 0 \\
+0 & 1
+\end{pmatrix}$}
+  \label{fig:NormalC}
+\end{figure}
+Rysunek \ref{fig:NormalC} jest identyczny, co do rozmieszczenia punktów, jak rysunek \ref{fig:rozklad-dwuwymiarowy-standardowy}. Wynika to z faktów, że w obu rozkładach zmienne są niezależne, centrum wykresu zostało przesunięte z $(0, 0)$ na $(4, 2)$ oraz trzykrotnie zwiększona została skala na osi OX (wariancja pierwszej zmiennej zmieniła się z 1 na 9, co oznacza, że odchylenie standardowe wzrosło trzykrotnie).
+
+
+\section{Zadanie 3}
+TODO
+
+
+\end{document}
+
+% \includegraphics[scale=0.5]{TwoDimensionalNormalStandard.png}

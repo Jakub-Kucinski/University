@@ -1,0 +1,4 @@
+"0","Omega<-solve(Sigma);"
+"0","S=t(X)%*%X/n;"
+"0","P<-solve(S);"
+"0","MSEinversecov<-sum((Omega-P)^2);"

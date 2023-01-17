@@ -1,0 +1,7 @@
+"0","set.seed(42)"
+"0","obj<-cv.glmnet(X,Y, alpha=1)"
+"0","betacv<-coefficients(obj, s='lambda.min')[2:(p+1),1]"
+"0","lambda <- 1*obj$lambda.min"
+"0","obj2<-glmnet(X,Y, alpha=1 ,lambda=lambda)"
+"0","betahat<-coefficients(obj2)[2:(p+1)]"
+"0","plot(betahat~beta)"

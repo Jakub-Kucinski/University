@@ -1,0 +1,7 @@
+"0","names_of_columns = c(""Model"", ""MSE"")"
+"0","task3 = data.frame(matrix(ncol=length(names_of_columns), nrow=0))"
+"0","colnames(task3) = names_of_columns"
+"0",""
+"0","task3[nrow(task3) + 1,] = c(""InverseSampleCov"", MSEinversecov)"
+"0","task3[nrow(task3) + 1,] = c(""gLASSO"", MSEglasso)"
+"0","task3"

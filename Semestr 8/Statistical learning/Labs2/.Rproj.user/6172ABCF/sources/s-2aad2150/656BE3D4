@@ -1,0 +1,28 @@
+{
+    "id": "656BE3D4",
+    "path": "/cloud/project/Labs2.Rmd",
+    "project_path": "Labs2.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1648754241906.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "18,11",
+        "scrollLine": "2",
+        "last_setup_crc32": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1650071984,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1650071984908,
+    "read_only": false,
+    "read_only_alternatives": []
+}

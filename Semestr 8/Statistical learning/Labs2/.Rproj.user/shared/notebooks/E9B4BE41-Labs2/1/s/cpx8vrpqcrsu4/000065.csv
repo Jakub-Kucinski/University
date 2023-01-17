@@ -1,0 +1,1 @@
+"0","plot(task1[,1], -task1[,4], type=""b"", xlab = ""Number of variables"", ylab=""Minus PE sigma known"", log=""x"")"

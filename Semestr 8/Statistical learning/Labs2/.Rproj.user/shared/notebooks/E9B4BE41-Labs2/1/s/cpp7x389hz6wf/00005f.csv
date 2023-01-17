@@ -1,0 +1,6 @@
+"0","string_number_of_columns = c('p=2', 'p=5', 'p=10', 'p=100', 'p=500', 'p=950')"
+"0","boxplot(task2[,,3] - task2[,,2],"
+"0","        use.cols = T,"
+"0","        names=string_number_of_columns,"
+"0","        ylab='Est PE sigma known - PE',"
+"0","        main='Boxplots of difference between PE and it\'s first estimator')"
