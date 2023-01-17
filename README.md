@@ -36,8 +36,8 @@
 - [Functional Programming](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%205/Programowanie%20Funkcyjne) (Programowanie Funkcyjne)
 
 ## Semester VI - Summer 2020/21
-- [Neural Networks and Deep Learning](https://github.com/Jakub-Kucinski/University/tree/master/)
-- [Artificial Intelligence](https://github.com/Jakub-Kucinski/University/tree/master/) (Sztuczna inteligencja)
+- [Neural Networks and Deep Learning](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%206/Neural%20Networks%20and%20Deep%20Learning)
+- [Artificial Intelligence](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%206/Sztuczna%20Inteligencja) (Sztuczna inteligencja)
 - Game Testing (Testowanie gier)
 - Another View of Economy (O ekonomii i gospodarce inaczej)
 
@@ -45,24 +45,24 @@
 # Master's degree - Data Science
 
 ## Semester VII - Winter 2021/22
-- [Algorithmic trading](https://github.com/Jakub-Kucinski/University/tree/master/)
-- [Linear models](https://github.com/Jakub-Kucinski/University/tree/master/) (Modele liniowe)
-- [Numerical Optimization](https://github.com/Jakub-Kucinski/University/tree/master/)
+- [Algorithmic trading]https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Algorithmic%20trading)
+- [Linear models](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Linear%20models) (Modele liniowe)
+- [Numerical Optimization](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Numerical%20Optimization)
 - [Optimization of deep neural networks on IoT devices](https://github.com/Jakub-Kucinski/University/tree/master/) (Optymalizacja głębokich sieci neuronowych na urządzenia IoT)
-- [Seminar: Data-Mining - data classification and grouping](https://github.com/Jakub-Kucinski/University/tree/master/) 
+- [Seminar: Data-Mining - data classification and grouping](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%207/Seminar%20Data-Mining%20-%20data%20classification%20and%20grouping) 
 
 ## Semester VIII - Summer 2021/22
-- [Seminar: Advanced Data Mining](https://github.com/Jakub-Kucinski/University/tree/master/)
-- [Algorithmic game theory](https://github.com/Jakub-Kucinski/University/tree/master/)
-- [Neural Networks and Natural Language Processing](https://github.com/Jakub-Kucinski/University/tree/master/)
-- [Project: Machine Learning for Recommender Systems](https://github.com/Jakub-Kucinski/University/tree/master/) (Projekt: Machine Learning for Recommender Systems)
-- [Seminar: Reinforcement learning for games](https://github.com/Jakub-Kucinski/University/tree/master/) (Seminarium: Reinforcement learning dla gier)
-- [Statistical learning](https://github.com/Jakub-Kucinski/University/tree/master/)
-- [Using Convolutional Neural Networks to Analyze 1D, 2D, and 3D Data](https://github.com/Jakub-Kucinski/University/tree/master/)
-- [Text mining](https://github.com/Jakub-Kucinski/University/tree/master/) (Eksploracja tekstów)
+- [Seminar: Advanced Data Mining]https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Seminar%20Advanced%20Data%20Mining)
+- [Algorithmic game theory](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Algorithmic%20game%20theory)
+- [Neural Networks and Natural Language Processing](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Neural%20Networks%20and%20Natural%20Language%20Processing)
+- [Project: Machine Learning for Recommender Systems](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Project%20Machine%20Learning%20for%20Recommender%20Systems) (Projekt: Machine Learning for Recommender Systems)
+- [Seminar: Reinforcement learning for games](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Seminar%20Reinforcement%20learning%20for%20games) (Seminarium: Reinforcement learning dla gier)
+- [Statistical learning](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Statistical%20learning)
+- [Using Convolutional Neural Networks to Analyze 1D, 2D, and 3D Data](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Using%20Convolutional%20Neural%20Networks%20to%20Analyze%201D%2C%202D%2C%20and%203D%20Data)
+- [Text mining](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%208/Text%20mining) (Eksploracja tekstów)
 
 ## Semester IX - Winter 2022/23
-- [Algorithmic Causality with Applications](https://github.com/Jakub-Kucinski/University/tree/master/)
+- [Algorithmic Causality with Applications](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%209/Algorithmic%20Causality%20with%20Applications)
 - English B2+ (Język angielski B2+)
 - Ideas of Post-Humanism: the Artificial Intelligence Project and the Problem of Possible Minds (Idee post-humanizmu: projekt sztucznej inteligencji i problem możliwych umysłów)
 - Introduction to cloud computing
@@ -76,3 +76,4 @@
 - Java, path: Semestr 2 -> Programowanie obiektowe -> [Projekt_obiektowe](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%202/Programowanie%20obiektowe/Projekt_obiektowe)
 - Evolutionary Algorithms, Semestr 5 -> Algorytmy Ewolucyjne -> [Projekt](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%205/Algorytmy%20Ewolucyjne/Projekt)
 - Machine Learning, another repository: [Credit_card_customers](https://github.com/Jakub-Kucinski/Credit_card_customers)
+- [Neural Networks and Deep Learning](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%206/Neural%20Networks%20and%20Deep%20Learning/SummarizationForPolishLanguage) - summarization of news articles for Polish language
