@@ -76,4 +76,4 @@
 - Java, path: Semestr 2 -> Programowanie obiektowe -> [Projekt_obiektowe](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%202/Programowanie%20obiektowe/Projekt_obiektowe)
 - Evolutionary Algorithms, Semestr 5 -> Algorytmy Ewolucyjne -> [Projekt](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%205/Algorytmy%20Ewolucyjne/Projekt)
 - Machine Learning, another repository: [Credit_card_customers](https://github.com/Jakub-Kucinski/Credit_card_customers)
-- [Neural Networks and Deep Learning](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%206/Neural%20Networks%20and%20Deep%20Learning/SummarizationForPolishLanguage) - summarization of news articles for Polish language
+- Neural Networks and Deep Learning - [summarization of news articles for Polish language](https://github.com/Jakub-Kucinski/University/tree/master/Semestr%206/Neural%20Networks%20and%20Deep%20Learning/SummarizationForPolishLanguage)
